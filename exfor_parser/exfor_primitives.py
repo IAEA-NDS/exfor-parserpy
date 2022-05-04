@@ -1,3 +1,5 @@
+from fortran_utils import fortstr2float
+
 def read_str_field(line, pos, width=1, trim=True):
     valstr = line[pos*11:(pos+width)*11]
     return valstr.rstrip() if trim else valstr
@@ -19,7 +21,7 @@ def write_int_field(line, pos, value, width=1):
 
 def read_float_field(line, pos, width=1):
     valstr = read_str_field(line, pos, width)
-    return float(valstr) if valstr != '' else None
+    return fortstr2float(valstr) if valstr != '' else None
 
 def write_float_field(line, pos, num, width=1):
     if num is not None:
