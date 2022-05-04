@@ -228,17 +228,18 @@ class ExforBaseParser(object):
 
     def parse(self, lines=None, datadic=None, inverse=False, ofs=0):
         if not inverse:
-            datadic = {'entries': []}
+            datadic = {}
             while ofs < len(lines):
                 if read_str_field(lines[ofs], 0) == 'ENTRY':
+                    entryid = read_str_field(lines[ofs], 1).strip()
                     entry, ofs = self.parse_entry(lines, None, inverse, ofs)
-                    datadic['entries'].append(entry)
+                    datadic[entryid] = entry
                 else:
                     ofs += 1
             return datadic, ofs
         else:
             lines = []
-            for curdic in datadic['entries']:
+            for curentryid, curdic in datadic.items():
                 curlines, ofs = self.parse_entry(lines, curdic, inverse, ofs)
                 lines.extend(curlines)
             return lines, ofs
