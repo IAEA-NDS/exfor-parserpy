@@ -23,6 +23,3 @@ parser.writefile('entry_O2098_reproduced.txt', exfor_entry, overwrite=True)
 transformed_entry = unitfy(exfor_entry)
 parser.writefile('entry_O2098_transformed.txt', transformed_entry, overwrite=True)
 
-
-
-
