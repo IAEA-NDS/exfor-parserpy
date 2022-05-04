@@ -205,11 +205,12 @@ class ExforBaseParser(object):
             if read_str_field(lines[ofs], 0) != 'ENTRY':
                 raise TypeError('not an ENTRY block')
             ofs += 1
-            datadic['subentries'] = []
+            datadic = {}
             while ofs < len(lines) and read_str_field(lines[ofs], 0) != 'ENDENTRY':
                 if read_str_field(lines[ofs], 0) == 'SUBENT':
+                    subentid = read_str_field(lines[ofs], 1).strip()
                     subent, ofs = self.parse_subentry(lines, None, inverse, ofs)
-                    datadic['subentries'].append(subent)
+                    datadic[subentid] = subent
                 else:
                     ofs += 1
             # advance ofs after ENDENTRY line
@@ -219,7 +220,7 @@ class ExforBaseParser(object):
             lines = []
             lines.append(write_str_field('', 0, 'ENTRY'))
             ofs += 1
-            for curdic in datadic['subentries']:
+            for cursubent, curdic in datadic.items():
                 curlines, ofs = self.parse_subentry(lines, curdic, inverse, ofs)
                 lines.extend(curlines)
             lines.append(write_str_field('', 0, 'ENDENTRY'))
