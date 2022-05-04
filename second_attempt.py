@@ -1,13 +1,13 @@
-from exfor_parser import *
+from exfor_parser import ExforBaseParser
 
-with open('testdata/entry_O2098.txt', 'r') as f:
-    exfor_content = f.readlines()
+parser = ExforBaseParser()
 
-exfor_content
+exfor_entry = parser.readfile('testdata/alldata/entry_33109.txt')
 
-resdic, ofs = parse_file(exfor_content)
+parser.writefile(exfor_entry, 'blabla.txt')
 
-newlines, ofs = parse_file(None, resdic, inverse=True)
+
+newlines = parser.write(exfor_entry)
 
 print('\n'.join(newlines))
 
