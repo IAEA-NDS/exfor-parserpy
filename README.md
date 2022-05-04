@@ -4,7 +4,7 @@ This parser reads the EXFOR format into a
 nested dictionary structure in Python.
 Importantly, for the time being it expects to find a
 full `ENTRY` in a file, which means that the file starts
-with 'ENTRY' and ends with `ENDENTRY`. Making the parser
+with `ENTRY` and ends with `ENDENTRY`. Making the parser
 smarter to accept files with subentries as top level
 organizational unit should be possible without too much
 difficulty if required.
