@@ -1,3 +1,12 @@
+############################################################
+#
+# Author:       Georg Schnabel
+# Email:        g.schnabel@iaea.org
+# Date:         2022/05/04
+# Copyright (c) 2022 International Atomic Energy Agency (IAEA)
+# License:      MIT
+#
+############################################################
 from os.path import exists
 from .exfor_primitives import (read_str_field, write_str_field,
         read_pointered_field, read_int_field, read_fields, write_fields,

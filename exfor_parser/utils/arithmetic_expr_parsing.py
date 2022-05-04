@@ -1,3 +1,13 @@
+############################################################
+#
+# Author:       Georg Schnabel
+# Email:        g.schnabel@iaea.org
+# Date:         2022/05/04
+# Copyright (c) 2022 International Atomic Energy Agency (IAEA)
+# License:      MIT
+#
+############################################################
+
 # functions to parse arithmetic expressions
 # vardic is a function that is invoked if
 # the conversion from a sequence of symbols (digits or characters)

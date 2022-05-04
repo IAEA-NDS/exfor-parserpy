@@ -1,3 +1,12 @@
+############################################################
+#
+# Author:       Georg Schnabel
+# Email:        g.schnabel@iaea.org
+# Date:         2022/05/04
+# Copyright (c) 2022 International Atomic Energy Agency (IAEA)
+# License:      MIT
+#
+############################################################
 def exfor_iterator(exfor_dic):
     # recursively scan an EXFOR data structure
     # in a top down way

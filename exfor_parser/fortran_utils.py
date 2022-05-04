@@ -1,3 +1,12 @@
+############################################################
+#
+# Author:       Georg Schnabel
+# Email:        g.schnabel@iaea.org
+# Date:         2022/05/04
+# Copyright (c) 2022 International Atomic Energy Agency (IAEA)
+# License:      MIT
+#
+############################################################
 def fortstr2float(valstr, blank=None):
     digitchars = (str(i) for i in range(10))
     for i, c in enumerate(valstr):

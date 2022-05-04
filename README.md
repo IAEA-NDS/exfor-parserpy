@@ -2,20 +2,24 @@
 
 This parser reads the EXFOR format into a
 nested dictionary structure in Python.
-Importantly, it expects the unit in a file
-to be an entry for the time being.
-The organization of the nested dictionary,
-let's call it `d` is as follows:
+Importantly, for the time being it expects to find a
+full `ENTRY` in a file, which means that the file starts
+with 'ENTRY' and ends with `ENDENTRY`. Making the parser
+smarter to accept files with subentries as top level
+organizational unit should be possible without too much
+difficulty if required.
 
 ## Structure of the parsed output
 
+The organization of the nested dictionary, let's call it `d`,
+returned by a parse is as follows:
 The keys of the items in `d` are the entry accession numbers, e.g., `21308`.
 The item associated with each entry accession number is another
 dictionary with the keys given by the accession number extend by the
 subentry number, e.g., `21308001` for the first entry.
 The items associated with these keys contain the keys `BIB`, `COMMON` (if present)
 and `DATA`.
-The keys in the `BIB` dictionary are reflect the ones in the EXFOR file, e.g.,
+The keys in the `BIB` dictionary reflect the ones in the EXFOR file, e.g.,
 `INSTITUTE`, `AUTHOR`, etc.
 Both the `COMMON` and `DATA` subdictionary share the same structure.
 They contain as keys `UNIT` and `DATA` and the associated items are again dictionaries.
@@ -25,7 +29,7 @@ The `DATA` subdictionary has the same keys as the `UNIT` dictionary and the item
 are float values in the case of the `COMMON` dictionary and lists in the case of the
 `DATA` dictionary.
 
-If a quantity is pointered, e.g., as indicated by `REACTION  1', the items in the
+If a quantity is pointered, e.g., as indicated by `REACTION  1`, the items in the
 `UNIT` dictionary are not strings, but dictionaries again, whose keys are the pointers
 of the EXFOR file. The same applies then to the `DATA` dictionary.
 
@@ -68,8 +72,8 @@ Here is a tree representing the structure of the nested dictionary:
                                 L--> ...
 ```
 
-If there would be pointers present, let's say in the `REACTION` field,
-we would get for that specific field the following structure
+If there are pointers present, let's say in the `REACTION` field,
+we get for that specific field the following structure
 (assuming there is a pointer named `1` and `A`):
 ```
 O2098 ->O2098002  -> BIB -----> AUTHOR (string)  -> ... 
@@ -83,11 +87,11 @@ O2098 ->O2098002  -> BIB -----> AUTHOR (string)  -> ...
                      L----> ...                   
 ```
 
-The parser was designed in a way to allow to go from the nested
-dictionary back to an EXFOR file. This conversion is not perfect
+The parser was designed to enable the conversion back from a nested
+dictionary to an EXFOR file. This conversion is not perfect
 at the moment (e.g., it ignores the `last updated` field in the
-head line of the ENTRY, or does not sent counter variables on
-the `COMMON` head line, but except from that works already pretty well.
+head line of the ENTRY, or does not set counter variables on
+the `COMMON` head line, but apart from that works already pretty well.
 
 ## Philosophy of the parser
 
@@ -95,18 +99,22 @@ The parser preserves the logical structure of the EXFOR entry
 as much as possible in order to allow for concise code to
 convert back to the EXFOR master file.
 
-The design philosophy is that further transformations that
-make EXFOR more machine readable can be effected on top
-of the basic nested dictionary using *transformers*.
+The guiding principle during the conception of this parser
+was to keep the basic parser simple and introduce 
+transformations to make EXFOR more machine readable
+on the parsed output.
+
+We call such functions working on the output of the
+parser *transformers*.
 A transformer is a function that takes a nested dictionary
-resulting from a parse and modifies it a certain way.
+resulting from a parse and modifies it in specific ways.
 For an example of a transformer see the next section.
 
 ## An example
 
 The `examples` directory contains already an example of how
 the parser can be used. We reproduce a part of it here.
-parsing an EXFOR master file can be done by
+Parsing an EXFOR master file can be done by
 ```
 from exfor_parser import ExforBaseParser 
 parser = ExforBaseParser()
@@ -129,5 +137,5 @@ This transformer is already included in the package.
 from exfor_parser.trafos import unitfy
 transformed_exfor_dic = unitfy(exfor_dic)
 parser.writefile('trafo_testoutput.x4', transformed_exfor_dic)
-``
+```
 
