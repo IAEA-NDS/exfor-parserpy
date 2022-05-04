@@ -1,6 +1,5 @@
 from os.path import exists
-import fortran_utils
-from exfor_primitives import (read_str_field, write_str_field,
+from .exfor_primitives import (read_str_field, write_str_field,
         read_pointered_field, read_int_field, read_fields, write_fields,
         update_dic, write_bib_element)
 
