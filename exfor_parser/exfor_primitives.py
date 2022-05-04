@@ -7,7 +7,7 @@
 # License:      MIT
 #
 ############################################################
-from .fortran_utils import fortstr2float
+from .utils.fortran_utils import fortstr2float
 
 def read_str_field(line, pos, width=1, trim=True):
     valstr = line[pos*11:(pos+width)*11]
