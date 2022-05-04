@@ -9,10 +9,10 @@
 ############################################################
 
 # functions to parse arithmetic expressions
-# vardic is a function that is invoked if
-# the conversion from a sequence of symbols (digits or characters)
-# to a number via float fails. So vardic can be used to
-# substitute variables by their values
+# vardic is a dictionary used to substitute names in an
+# arithmetic expression by numbers or another name.
+# the function to be invoked by the user here is
+# eval_arithm_expr
 
 def get_number(expr, vardic, ofs, comp, ops):
     curstr = ''
