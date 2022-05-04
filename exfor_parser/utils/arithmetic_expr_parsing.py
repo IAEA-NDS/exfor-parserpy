@@ -1,25 +1,34 @@
 # functions to parse arithmetic expressions
-# callback is a function that is invoked if
+# vardic is a function that is invoked if
 # the conversion from a sequence of symbols (digits or characters)
-# to a number via float fails. So callback can be used to
+# to a number via float fails. So vardic can be used to
 # substitute variables by their values
 
-def get_number(expr, callback, ofs):
+def get_number(expr, vardic, ofs, comp, ops):
     curstr = ''
     while (ofs < len(expr) and
-           expr[ofs] not in (' ','+','-','*','/',')')): 
+           expr[ofs] not in ' ' + ops): 
         curstr += expr[ofs]
-        truthval = expr[ofs] not in (' ','+','-','*','/',')')
         ofs +=1
     # try to obtain a number
-    try:
-        number = float(curstr)
+    if comp:
+        try:
+            number = float(curstr)
+            return number, ofs
+        except:
+            pass
+        # obtain a value from the dictionary
+        # if the value is not found we assume 1
+        # which is the desired behavior in compound
+        # units
+        number = vardic.get(curstr, 1)
         return number, ofs
-    except:
-        pass
-    # try to obtain a value using the callback
-    number = callback(curstr)
-    return number, ofs
+    else:
+        # we only substitute names in the arithmetic
+        # expression string but do not try to calculate something
+        if curstr in vardic:
+            curstr = vardic[curstr]
+        return curstr, ofs
 
 def get_next_char(expr, ofs):
     while (ofs < len(expr) and not expr[ofs].isdigit() and
@@ -30,57 +39,68 @@ def get_next_char(expr, ofs):
     else:
         return expr[ofs], ofs
 
-def eval_symbol(expr, callback, ofs):
+def eval_symbol(expr, vardic, ofs, comp, ops):
     next_char, ofs = get_next_char(expr, ofs)
-    print(f'next char is {next_char}')
     if next_char == '-':
-        leftval, ofs = eval_symbol(expr, callback, ofs+1)
-        leftval = -leftval
+        leftval, ofs = eval_symbol(expr, vardic, ofs+1, comp, ops)
+        if comp:
+            leftval = -leftval
+        else:
+            leftval = '-' + leftval
     elif next_char == '(':
-        leftval, ofs = eval_addition(expr, callback, ofs+1)
+        leftval, ofs = eval_addition(expr, vardic, ofs+1, comp, ops)
         next_char, ofs = get_next_char(expr, ofs)
         if next_char != ')':
             raise ValueError('bracket not closed')
+        if not comp:
+            leftval = '(' + leftval + ')'
         ofs += 1
     elif next_char.isalpha() or next_char.isdigit() or '-':
-        leftval, ofs = get_number(expr, callback, ofs) 
+        leftval, ofs = get_number(expr, vardic, ofs, comp, ops) 
     # division needs to be treated specially
     next_char, ofs = get_next_char(expr, ofs)
     if next_char == '/':
-        rightval, ofs = eval_symbol(expr, callback, ofs+1)
-        return leftval / rightval, ofs 
+        rightval, ofs = eval_symbol(expr, vardic, ofs+1, comp, ops)
+        if comp:
+            return leftval / rightval, ofs 
+        else:
+            return leftval + '/' + rightval, ofs
     else:
         return leftval, ofs
 
-def eval_product(expr, callback, ofs):
-    leftval, ofs = eval_symbol(expr, callback, ofs)
+def eval_product(expr, vardic, ofs, comp, ops):
+    leftval, ofs = eval_symbol(expr, vardic, ofs, comp, ops)
     next_char, ofs = get_next_char(expr, ofs)
     if next_char == '*':
-        rightval, ofs = eval_product(expr, callback, ofs+1)
-        return leftval * rightval, ofs
+        rightval, ofs = eval_product(expr, vardic, ofs+1, comp, ops)
+        if comp:
+            return leftval * rightval, ofs
+        else:
+            return leftval + '*' + rightval, ofs
     else:
         return leftval, ofs
 
-def eval_addition(expr, callback, ofs): 
-    leftval, ofs = eval_product(expr, callback, ofs)
+def eval_addition(expr, vardic, ofs, comp, ops): 
+    leftval, ofs = eval_product(expr, vardic, ofs, comp, ops)
     next_char, ofs = get_next_char(expr, ofs)
     if next_char == '+':
-        rightval, ofs = eval_addition(expr, callback, ofs+1) 
-        return leftval + rightval, ofs
+        rightval, ofs = eval_addition(expr, vardic, ofs+1, comp, ops) 
+        if comp:
+            return leftval + rightval, ofs
+        else:
+            return leftval + '+' + rightval, ofs
     elif next_char == '-':
-        rightval, ofs = eval_addition(expr, callback, ofs+1)
-        return leftval - rightval, ofs
+        rightval, ofs = eval_addition(expr, vardic, ofs+1, comp, ops)
+        if comp:
+            return leftval - rightval, ofs
+        else:
+            return leftval + '-' + rightval, ofs
     else:
         return leftval, ofs
 
-def idfun(x):
-    return x
-
-def eval_arithm_expr(expr, callback=None):
-    def idfun(x):
-        return x
-    if callback is None:
-        callback = idfun
-    value, _ = eval_addition(expr, callback, ofs=0)
+def eval_arithm_expr(expr, vardic=None, comp=True, ops='+-*/'):
+    if vardic is None:
+        vardic = {}
+    value, _ = eval_addition(expr, vardic, ofs=0, comp=comp, ops=ops)
     return value
     

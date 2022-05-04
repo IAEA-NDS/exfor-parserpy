@@ -39,14 +39,14 @@ def read_pointered_field(line, pos):
     fieldkey = valstr[:10].strip()
     return fieldkey, pointer
 
-def write_pointered_field(line, pos, fieldkey, pointer):
-    valstr = fieldkey.ljust(10)
+def write_pointered_field(line, pos, fieldkey, pointer, outkey=True):
+    valstr = fieldkey.ljust(10) if outkey else ' '*10
     valstr+= pointer if pointer else ' '
     return write_str_field(line, pos, valstr)
 
-def write_bib_element(fieldkey, pointer, content):
+def write_bib_element(fieldkey, pointer, content, outkey=True):
     content_lines = content.splitlines()
-    curline = write_pointered_field('', 0, fieldkey, pointer)
+    curline = write_pointered_field('', 0, fieldkey, pointer, outkey)
     curline = write_str_field(curline, 1, content_lines[0], width=5)
     newlines = [curline]
     if len(content_lines) > 1:

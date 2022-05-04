@@ -38,8 +38,11 @@ class ExforBaseParser(object):
                 if not has_pointers:
                     lines.extend(write_bib_element(fieldkey, None, content))
                 else:
+                    first = True
                     for pointer in content:
-                        lines.extend(write_bib_element(fieldkey, pointer, content[pointer]))
+                        lines.extend(write_bib_element(fieldkey, pointer, content[pointer],
+                                                       outkey=first))
+                        first = False
             ofs += len(lines)
             return lines, ofs
 
@@ -266,8 +269,8 @@ class ExforBaseParser(object):
             cont = f.readlines()
         return self.read(cont)
 
-    def writefile(self, filename, exfor_dic):
-        if exists(filename):
+    def writefile(self, filename, exfor_dic, overwrite=False):
+        if not overwrite and exists(filename):
             raise FileExistsError(f'The file {filename} already exists')
         lines = self.write(exfor_dic)
         lines = [l.rstrip('\n').rstrip('\r') + '\n' for l in lines]
