@@ -12,13 +12,13 @@ specification of the format is provided in the
 Making the parser smarter to accept files with subentries as top level
 organizational unit will be done eventually.
 
-The development of this parser was initated as a
+The development of this parser was initiated as a
 development project at the IAEA to support the
 efforts of WPEC SG50 to design a machine-readable
 experimental database.
 
 The development of this parser is at an early stage and it
-has not beenn thoroughly tested yet. If you use it and
+has not been thoroughly tested yet. If you use it and
 encounter any issue, drop us an [email](mailto:g.schnabel@iaea.org).
 
 ## An example
@@ -27,7 +27,7 @@ The `examples` directory contains already an example of how
 the parser can be used. We reproduce a part of it here.
 Parsing an EXFOR master file can be done by
 ```
-from exfor_parser import ExforBaseParser 
+from exfor_parserpy import ExforBaseParser 
 parser = ExforBaseParser()
 exfor_dic = parser.readfile('testdata/entry_21308.txt')
 ```
@@ -45,12 +45,12 @@ cross section and derived units in millibarn and write it back
 to a file.
 This transformer is already included in the package.
 ```
-from exfor_parser.trafos import unitfy
+from exfor_parserpy.trafos import unitfy
 transformed_exfor_dic = unitfy(exfor_dic)
 parser.writefile('trafo_testoutput.x4', transformed_exfor_dic)
 ```
 
-## Structure of the parsed output
+## Structure of the result of a parse
 
 The organization of the nested dictionary, let's call it `d`,
 returned by a parse is as follows:
