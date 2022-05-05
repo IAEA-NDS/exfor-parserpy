@@ -1,7 +1,7 @@
 import sys
 sys.path.append('..')
-from exfor_parser import ExforBaseParser
-from exfor_parser.trafos import unitfy
+from exfor_parserpy import ExforBaseParser
+from exfor_parserpy.trafos import unitfy
 
 # reading and writing an EXFOR entry
 # with pointers
