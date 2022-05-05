@@ -1,13 +1,54 @@
-# A prototype of an EXFOR parser
+# exfor-parserpy - v0.1
 
 This parser reads the EXFOR format into a
 nested dictionary structure in Python.
 Importantly, for the time being it expects to find a
-full `ENTRY` in a file, which means that the file starts
-with `ENTRY` and ends with `ENDENTRY`. Making the parser
-smarter to accept files with subentries as top level
-organizational unit should be possible without too much
-difficulty if required.
+full entry in a file, which means that the file starts
+with `ENTRY` and ends with `ENDENTRY`. You can
+inspect the files available in the `testdata` directory
+to get a better idea of the EXFOR format. The technical
+specification of the format is provided in the
+[EXFOR formats manual](https://nds.iaea.org/publications/nds/iaea-nds-0207/).
+Making the parser smarter to accept files with subentries as top level
+organizational unit will be done eventually.
+
+The development of this parser was initated as a
+development project at the IAEA to support the
+efforts of WPEC SG50 to design a machine-readable
+experimental database.
+
+The development of this parser is at an early stage and it
+has not beenn thoroughly tested yet. If you use it and
+encounter any issue, drop us an [email](mailto:g.schnabel@iaea.org).
+
+## An example
+
+The `examples` directory contains already an example of how
+the parser can be used. We reproduce a part of it here.
+Parsing an EXFOR master file can be done by
+```
+from exfor_parser import ExforBaseParser 
+parser = ExforBaseParser()
+exfor_dic = parser.readfile('testdata/entry_21308.txt')
+```
+Now we can make manipulations in the EXFOR
+dictionary and write it back to a file, for instance:
+```
+exfor_dic['21308']['21308001']['BIB']['AUTHOR'] = 'Who is this author?'
+parser.writefile('testoutput.x4', exfor_dic)
+```
+
+Finally, we want to introduce the concept of a *transformer* at the
+example of converting all quantities to the same units.
+Let's say we want to have all energy units in MeV and all
+cross section and derived units in millibarn and write it back
+to a file.
+This transformer is already included in the package.
+```
+from exfor_parser.trafos import unitfy
+transformed_exfor_dic = unitfy(exfor_dic)
+parser.writefile('trafo_testoutput.x4', transformed_exfor_dic)
+```
 
 ## Structure of the parsed output
 
@@ -108,36 +149,8 @@ We call such functions working on the output of the
 parser *transformers*.
 A transformer is a function that takes a nested dictionary
 resulting from a parse and modifies it in specific ways.
-For an example of a transformer see the next section.
-
-## An example
-
-The `examples` directory contains already an example of how
-the parser can be used. We reproduce a part of it here.
-Parsing an EXFOR master file can be done by
-```
-from exfor_parser import ExforBaseParser 
-parser = ExforBaseParser()
-exfor_dic = parser.readfile('testdata/entry_21308.txt')
-```
-Now we can make manipulations in the EXFOR
-dictionary and write it back to a file, for instance:
-```
-exfor_dic['21308']['21308001']['BIB']['AUTHOR'] = 'Who is this author?'
-parser.writefile('testoutput.x4', exfor_dic)
-```
-
-Finally, we want to introduce the concept of a *transformer* at the
-example of converting all quantities to the same units.
-Let's say we want to have all energy units in MeV and all
-cross section and derived units in millibarn and write it back
-to a file.
-This transformer is already included in the package.
-```
-from exfor_parser.trafos import unitfy
-transformed_exfor_dic = unitfy(exfor_dic)
-parser.writefile('trafo_testoutput.x4', transformed_exfor_dic)
-```
+An example of a transformer has already been provided
+in the example section above.
 
 ## Legal note
 
