@@ -139,3 +139,10 @@ transformed_exfor_dic = unitfy(exfor_dic)
 parser.writefile('trafo_testoutput.x4', transformed_exfor_dic)
 ```
 
+## Legal note
+
+This code is distributed under the MIT license, see the
+accompanying license file for more information.
+
+Copyright (c) International Atomic Energy Agency (IAEA)
+
