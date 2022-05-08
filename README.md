@@ -54,9 +54,10 @@ parser.writefile('trafo_testoutput.x4', transformed_exfor_dic)
 
 The organization of the nested dictionary, let's call it `d`,
 returned by a parse is as follows:
+
 The keys of the items in `d` are the entry accession numbers, e.g., `21308`.
 The item associated with each entry accession number is another
-dictionary with the keys given by the accession number extend by the
+dictionary with the keys given by the accession number extended by the
 subentry number, e.g., `21308001` for the first entry.
 The items associated with these keys contain the keys `BIB`, `COMMON` (if present)
 and `DATA`.
@@ -67,15 +68,15 @@ They contain as keys `UNIT` and `DATA` and the associated items are again dictio
 The keys in the `UNIT` item are given by the unit strings present in the EXFOR file,
 such as, `EN`, `DATA`, `ERR-S`, etc.
 The `DATA` subdictionary has the same keys as the `UNIT` dictionary and the items
-are float values in the case of the `COMMON` dictionary and lists in the case of the
+are float values in the case of the `COMMON` dictionary and lists of floats in the case of the
 `DATA` dictionary.
 
 If a quantity is pointered, e.g., as indicated by `REACTION  1`, the items in the
-`UNIT` dictionary are not strings, but dictionaries again, whose keys are the pointers
+`UNIT` dictionary are not strings but dictionaries again, whose keys are the pointers
 of the EXFOR file. The same applies then to the `DATA` dictionary.
 
-Metainformation, such as in `TITLE` are preserved as strings with linebreaks included.
-However, in each line, blanks at the end of the strings are stripped away.
+Meta-information, such as in `TITLE` are preserved as strings with line breaks included.
+However, in each line blanks at the end of the strings are stripped away.
 
 Here is a tree representing the structure of the nested dictionary:
 ```
@@ -113,9 +114,9 @@ Here is a tree representing the structure of the nested dictionary:
                                 L--> ...
 ```
 
-If there are pointers present, let's say in the `REACTION` field,
+If there are pointers present, e.g., in the `REACTION` field,
 we get for that specific field the following structure
-(assuming there is a pointer named `1` and `A`):
+(assuming there are two pointers named `1` and `A`):
 ```
 O2098 ->O2098002  -> BIB -----> AUTHOR (string)  -> ... 
                      |
@@ -130,8 +131,8 @@ O2098 ->O2098002  -> BIB -----> AUTHOR (string)  -> ...
 
 The parser was designed to enable the conversion back from a nested
 dictionary to an EXFOR file. This conversion is not perfect
-at the moment (e.g., it ignores the `last updated` field in the
-head line of the ENTRY, or does not set counter variables on
+at the moment, e.g., it ignores the `last updated` field in the
+head line of the ENTRY and does not set counter variables in
 the `COMMON` head line, but apart from that works already pretty well.
 
 ## Philosophy of the parser
