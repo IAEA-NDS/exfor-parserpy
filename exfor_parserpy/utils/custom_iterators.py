@@ -7,13 +7,14 @@
 # License:      MIT
 #
 ############################################################
+
+from .convenience import is_dic
+
 def exfor_iterator(exfor_dic):
-    # recursively scan an EXFOR data structure
-    # in a top down way
-    def recfun(dic):
-        if isinstance(dic, dict):
-            yield dic
-            for key, item in dic.items():
-                yield from recfun(item)
-    yield from recfun(exfor_dic)
+    """Traverse all subdictionaries bottom-up."""
+    if is_dic(exfor_dic):
+        for key, item in exfor_dic.items():
+            if is_dic(item):
+                yield from exfor_iterator(item)
+        yield exfor_dic
 
