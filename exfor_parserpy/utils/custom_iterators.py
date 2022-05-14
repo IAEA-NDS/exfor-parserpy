@@ -18,3 +18,11 @@ def exfor_iterator(exfor_dic):
                 yield from exfor_iterator(item)
         yield exfor_dic
 
+def exfor_iterator2(exfor_dic, key=None):
+    """Traverse all subdictionaries bottom-up."""
+    if is_dic(exfor_dic):
+        for curkey, item in exfor_dic.items():
+            if is_dic(item):
+                yield from exfor_iterator2(item, curkey)
+        yield key, exfor_dic
+
