@@ -39,3 +39,10 @@ def exfor_iterator3(exfor_dic, key=None, parent=None, filterfun=None):
         # even if filterfun evaluates to True
         yield key, exfor_dic, parent
 
+def search_for_field(dic, fieldname):
+    """Find value of field by recursion."""
+    for curdic in exfor_iterator(dic):
+        if fieldname in curdic:
+            return curdic[fieldname]
+    return None
+
