@@ -13,10 +13,13 @@ def read_str_field(line, pos, width=1, trim=True):
     valstr = line[pos*11:(pos+width)*11]
     return valstr.rstrip() if trim else valstr
 
-def write_str_field(line, pos, mystr, width=1):
+def write_str_field(line, pos, mystr, width=1, align='left'):
     line = line.ljust(66)
     newline = line[:pos*11] if pos > 0 else ''
-    newline += mystr.ljust(width*11)
+    if align == 'left':
+        newline += mystr.ljust(width*11)
+    else:
+        newline += mystr.rjust(width*11)
     newline += line[(pos+width)*11:]
     return newline
 
