@@ -1,7 +1,7 @@
 import sys
 sys.path.append('..')
 from exfor_parserpy import ExforBaseParser
-from exfor_parserpy.trafos import unitfy, uncommonfy
+from exfor_parserpy.trafos import unitfy, uncommonfy, depointerfy
 
 # reading and writing an EXFOR entry
 # with pointers
@@ -49,4 +49,11 @@ exfor_entry['O2098']['O2098002']['DATA']['UNIT']
 transformed_entry['O2098']['O2098002']['DATA']['UNIT']
 exfor_entry['O2098']['O2098002']['DATA']['DATA']
 transformed_entry['O2098']['O2098002']['DATA']['DATA']
+
+# test the depointerfy transformer to split up
+# subentries with pointers present
+parser = ExforBaseParser()
+exfor_entry = parser.readfile('../testdata/entry_21308.txt')
+transformed_entry = depointerfy(exfor_entry)
+parser.writefile('entry_21308_depointered.txt', transformed_entry, overwrite=True)
 
