@@ -3,7 +3,7 @@
 # Author(s):       Georg Schnabel
 # Email:           g.schnabel@iaea.org
 # Creation date:   2022/05/04
-# Last modified:   2022/05/14
+# Last modified:   2022/05/15
 # License:         MIT
 # Copyright (c) 2022 International Atomic Energy Agency (IAEA)
 #
@@ -25,6 +25,33 @@ def is_list(obj):
 
 def is_str(obj):
     return isinstance(obj, str)
+
+def is_subent_id(string):
+    if not is_str(string) and len(string) != 8:
+        return False
+    for c in string:
+        if not c.isalpha() and not c.isdigit():
+            return False
+        elif c.isalpha() and not c.isupper():
+            return False
+    return True
+
+def is_subentry(dic, key=None):
+    if key is not None and not is_subent_id(key):
+        return False
+    if 'BIB' not in dic:
+        return False
+    return True
+
+def contains_pointers(dic):
+    for k in dic:
+        if not is_str(k) or len(k) != 1:
+            return False
+        elif k.isalpha() and not k.isupper():
+            return False
+        elif not k.isdigit():
+            return False
+    return True
 
 def has_common_block(dic):
     if 'COMMON' in dic:
