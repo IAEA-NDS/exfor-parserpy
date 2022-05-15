@@ -11,6 +11,7 @@ from os.path import exists
 from .exfor_primitives import (read_str_field, write_str_field,
         read_pointered_field, read_int_field, read_fields, write_fields,
         update_dic, write_bib_element)
+from .utils.custom_iterators import search_for_field
 
 class ExforBaseParser(object):
 
@@ -161,11 +162,17 @@ class ExforBaseParser(object):
             ofs += 1
             return lines, ofs
 
-    def parse_subentry(self, lines=None, datadic=None, inverse=False, ofs=0):
+    def parse_subentry(self, lines=None, datadic=None, inverse=False, ofs=0,
+                       auxinfo=None):
         if not inverse:
             datadic = {}
             if read_str_field(lines[ofs], 0) != 'SUBENT':
                 raise TypeError('not a SUBENT block')
+            if auxinfo is None:
+                auxinfo = {}
+            auxinfo['subentryid'] = read_str_field(lines[ofs], 1).strip()
+            datadic['__entryid'] = auxinfo['entryid']
+            datadic['__subentid'] = auxinfo['subentryid']
             ofs += 1
             while ofs < len(lines) and read_str_field(lines[ofs], 0) != 'ENDSUBENT':
                 curfield = read_str_field(lines[ofs], 0)
@@ -189,7 +196,10 @@ class ExforBaseParser(object):
             return datadic, ofs
         else:
             lines = []
-            lines.append(write_str_field('', 0, 'SUBENT'))
+            subent_line = write_str_field('', 0, 'SUBENT')
+            subent_line = write_str_field(subent_line, 1, datadic['__subentid'],
+                                          align='right')
+            lines.append(subent_line)
             ofs += 1
             if 'BIB' in datadic:
                 curdic = datadic['BIB']
@@ -211,17 +221,22 @@ class ExforBaseParser(object):
             lines.append(write_str_field('', 0, 'ENDSUBENT'))
             return lines, ofs
 
-    def parse_entry(self, lines=None, datadic=None, inverse=False, ofs=0):
+    def parse_entry(self, lines=None, datadic=None, inverse=False, ofs=0,
+                    auxinfo=None):
         if not inverse:
             datadic = {'subentries': []}
             if read_str_field(lines[ofs], 0) != 'ENTRY':
                 raise TypeError('not an ENTRY block')
+            if auxinfo is None:
+                auxinfo = {}
+            auxinfo['entryid'] = read_str_field(lines[ofs], 1).strip()
             ofs += 1
             datadic = {}
             while ofs < len(lines) and read_str_field(lines[ofs], 0) != 'ENDENTRY':
                 if read_str_field(lines[ofs], 0) == 'SUBENT':
                     subentid = read_str_field(lines[ofs], 1).strip()
-                    subent, ofs = self.parse_subentry(lines, None, inverse, ofs)
+                    subent, ofs = self.parse_subentry(lines, None, inverse, ofs,
+                                                      auxinfo=auxinfo)
                     datadic[subentid] = subent
                 else:
                     ofs += 1
@@ -230,7 +245,16 @@ class ExforBaseParser(object):
             return datadic, ofs
         else:
             lines = []
-            lines.append(write_str_field('', 0, 'ENTRY'))
+            # locate the first subentry id among the subentries
+            # in the current entry dictionary and extract the
+            # entry id from that
+            first_subentid = search_for_field(datadic, '__subentid')
+            if not first_subentid:
+                raise IndexError('No subentry identification number found')
+            entryid = first_subentid[:5]
+            entry_line = write_str_field('', 0, 'ENTRY')
+            entry_line = write_str_field(entry_line, 1, entryid, align='right')
+            lines.append(entry_line)
             ofs += 1
             for cursubent, curdic in datadic.items():
                 curlines, ofs = self.parse_subentry(lines, curdic, inverse, ofs)
