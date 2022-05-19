@@ -16,6 +16,7 @@ FACTORS_DIC = {
     # converson factors to obtain MB
     'B' : 1e3,
     'MB': 1, 
+    'MU-B': 1e-3,
     # conversion factors to obtain MEV
     'MILLI-EV': 1e-9,
     'EV':  1e-6,
@@ -29,6 +30,7 @@ UNIT_DIC = {
     # xs type units
     'B' : 'MB',
     'MB': 'MB',
+    'MU-B': 'MB',
     # energy type units
     'MILLI-EV': 'MEV',
     'EV' : 'MEV',
