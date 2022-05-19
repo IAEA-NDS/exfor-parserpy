@@ -35,12 +35,16 @@ def uncommonfy(exfor_dic, delete_common=True):
         # the assumption here is that DATA and COMMON
         # blocks are at the top level of a subentry
         # so we know that curkey contains the subentry accession number.
-        datablock = curdic['DATA'] 
+        datablock = curdic['DATA']
         numpoints = count_points_in_datablock(datablock)
         # first incorporate the common block of the first subentry.
-        # we attach everything of curkey beyond the 8th
-        # position in the anticipation of pointer handling
-        first_subid = curkey[:5] + '001' + curkey[8:]
+        # we only match the first 8 characters to be robust
+        # against added suffixes due to pointers or similar
+        first_subid = curkey[:5] + '001'
+        first_subid_ext = first_subid + curkey[8:]
+        if first_subid_ext in common_dic:
+            first_subid = first_subid_ext
+
         if first_subid in common_dic:
             commonblock = common_dic[first_subid]['COMMON']
             merge_common_into_datablock(datablock, commonblock)
