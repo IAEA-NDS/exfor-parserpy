@@ -1,13 +1,13 @@
-import sys
-sys.path.append('..')
+from pathlib import Path
 from exfor_parserpy import ExforBaseParser
 from exfor_parserpy.trafos import (unitfy, uncommonfy,
         depointerfy, detextify)
 import json
 
+TEST_DATA = Path(__file__).resolve().parents[1] / "tests" / "testdata"
 
 parser = ExforBaseParser()
-exfor_entry = parser.readfile('../testdata/entry_21308.txt')
+exfor_entry = parser.readfile(TEST_DATA / 'entry_21308.txt')
 
 # apply all transformations: unitfy, uncommonfy, depointerfy
 trafo_entry = unitfy(exfor_entry)
@@ -23,17 +23,17 @@ parser.writefile('entry_21308_transformed2.txt', trafo_entry, overwrite=True)
 
 
 # conversion of compound units in compound quantities
-exfor_entry = parser.readfile('../testdata/entry_T0408.txt')
+exfor_entry = parser.readfile(TEST_DATA / 'entry_T0408.txt')
 trafo_entry = unitfy(exfor_entry)
 parser.writefile('entry_T0408_unitfy.txt', trafo_entry, overwrite=True)
 
-exfor_entry = parser.readfile('../testdata/entry_23245.txt')
+exfor_entry = parser.readfile(TEST_DATA / 'entry_23245.txt')
 trafo_entry = unitfy(exfor_entry)
 parser.writefile('entry_23245_unitfy.txt', trafo_entry, overwrite=True)
 
 
 # example with detextify transformer
-exfor_entry = parser.readfile('../testdata/entry_T0408.txt')
+exfor_entry = parser.readfile(TEST_DATA / 'entry_T0408.txt')
 trafo_entry = detextify(exfor_entry)
 # with detextify we are transforming the EXFOR entry in
 # a way that does not allow the conversion back anymore.
