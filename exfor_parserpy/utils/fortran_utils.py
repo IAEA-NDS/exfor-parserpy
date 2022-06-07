@@ -9,10 +9,9 @@
 ############################################################
 def fortstr2float(valstr, blank=None):
     valstr = valstr.replace(' ','')
-    digitchars = (str(i) for i in range(10))
     for i, c in enumerate(valstr):
         if i>0 and (c == '+' or c == '-'):
-            if valstr[i-1] in digitchars:
+            if valstr[i-1].isdigit() or valstr[i-1] == '.':
                 return float(valstr[:i] + 'E' + valstr[i:])
     return float(valstr)
 
