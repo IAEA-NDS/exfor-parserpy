@@ -45,12 +45,15 @@ def is_subentry(dic, key=None):
 
 def contains_pointers(dic):
     for k in dic:
-        if not is_str(k) or len(k) != 1:
+        if not is_str(k):
             return False
-        elif k.isalpha() and not k.isupper():
+        if len(k) != 1:
             return False
-        elif not k.isdigit():
-            return False
+        if k.isalpha() and k.isupper():
+            continue
+        if k.isdigit():
+            continue
+        return False
     return True
 
 def has_common_block(dic):
