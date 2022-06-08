@@ -35,7 +35,7 @@ def depointerfy(exfor_dic, delete_pointered_subents=True):
             if contains_pointers(fieldcont):
                 curpointers = set(fieldcont.keys())
                 if len(pointers) != 0 and pointers != curpointers:
-                    raise IndexError(f'Inconsistent pointers in subentry {subentid}')
+                    raise IndexError(f"Inconsistent pointers in subentry {subentid}")
                 pointers = curpointers
         # duplicate subentries with pointers
         # and use the values of a specific pointer in each of them.
@@ -47,7 +47,7 @@ def depointerfy(exfor_dic, delete_pointered_subents=True):
                     parent_of_field[fieldname] = fieldcont[curpointer]
             # construct an extended subentry id
             pointered_subentid = subentid + curpointer
-            newsubent['__subentid'] = pointered_subentid
+            newsubent["__subentid"] = pointered_subentid
             parent_of_subent[pointered_subentid] = newsubent
         # after all pointers have been processed,
         # delete the old subentry with pointers if desired
@@ -55,4 +55,3 @@ def depointerfy(exfor_dic, delete_pointered_subents=True):
             del parent_of_subent[subentid]
     # yay, we are done
     return ret_dic
-

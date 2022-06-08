@@ -27,7 +27,7 @@ The `examples` directory contains already an example of how
 the parser can be used. We reproduce a part of it here.
 Parsing an EXFOR master file can be done by
 ```
-from exfor_parserpy import ExforBaseParser 
+from exfor_parserpy import ExforBaseParser
 parser = ExforBaseParser()
 exfor_dic = parser.readfile('testdata/entry_21308.txt')
 ```
@@ -80,13 +80,13 @@ However, in each line blanks at the end of the strings are stripped away.
 
 Here is a tree representing the structure of the nested dictionary:
 ```
-21308 -> 21308001 -> BIB -----> AUTHOR (string) 
+21308 -> 21308001 -> BIB -----> AUTHOR (string)
              |      |
              |      L----> REFERENCE (string)
              |      |
              |      L----> REACTION (string)
              |      |
-             |      L----> ...                   
+             |      L----> ...
              |
              |
              L> COMMON --> UNIT ---> ERR-S (string)
@@ -99,7 +99,7 @@ Here is a tree representing the structure of the nested dictionary:
              |                  |
              |                  L--> DATA (float)
              |                  |
-             |                  L--> ...              
+             |                  L--> ...
              |
              L> DATA ----> UNIT ---> ERR-S (string)
                        |        |
@@ -118,15 +118,15 @@ If there are pointers present, e.g., in the `REACTION` field,
 we get for that specific field the following structure
 (assuming there are two pointers named `1` and `A`):
 ```
-O2098 ->O2098002  -> BIB -----> AUTHOR (string)  -> ... 
+O2098 ->O2098002  -> BIB -----> AUTHOR (string)  -> ...
                      |
                      L----> REFERENCE (string)
                      |
-                     L----> REACTION ---> 1 (string) 
+                     L----> REACTION ---> 1 (string)
                      |               |
                      |               L--> A (string)
                      |
-                     L----> ...                   
+                     L----> ...
 ```
 
 The parser was designed to enable the conversion back from a nested
@@ -142,7 +142,7 @@ as much as possible in order to allow for concise code to
 convert back to the EXFOR master file.
 
 The guiding principle during the conception of this parser
-was to keep the basic parser simple and introduce 
+was to keep the basic parser simple and introduce
 transformations to make EXFOR more machine readable
 on the parsed output.
 
