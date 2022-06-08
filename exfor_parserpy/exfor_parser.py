@@ -17,28 +17,28 @@ class ExforBaseParser(object):
 
     def parse_bib_element(self, lines=None, datadic=None, inverse=False, ofs=0):
         if not inverse:
+            pointerdic = {}
             fieldkey, pointer = read_pointered_field(lines[ofs], 0)
             content = read_str_field(lines[ofs], 1, 5)
             ofs += 1
-            if not pointer:
-                nextfieldkey = read_str_field(lines[ofs], 0)
-                while nextfieldkey == '':
-                    content += '\n' + read_str_field(lines[ofs], 1, 5)
-                    ofs += 1
-                    nextfieldkey = read_str_field(lines[ofs], 0)
-                return {fieldkey: content}, ofs
-            else:
-                pointerdic = {}
+            nextfield, nextpointer = read_pointered_field(lines[ofs], 0)
+            while nextfield == '':
+                if nextpointer != ' ':
+                    pointerdic[pointer] = content
+                    pointer = nextpointer
+                    content = ''
+                if content != '':
+                    content += '\n'
+                content += read_str_field(lines[ofs], 1, 5)
+                ofs += 1
                 nextfield, nextpointer = read_pointered_field(lines[ofs], 0)
-                while nextfield == '':
-                    if nextfield == '' and nextpointer:
-                        pointerdic[pointer] = content
-                        pointer = nextpointer
-                        content = ''
-                    content += read_str_field(lines[ofs], 1, 5)
-                    ofs += 1
-                    nextfield, nextpointer = read_pointered_field(lines[ofs], 0)
-                pointerdic[pointer] = content
+            pointerdic[pointer] = content
+            # if no regular pointers are available,
+            # we collapse the dictionary to a string
+            if len(pointerdic)==1 and ' ' in pointerdic:
+                return {fieldkey: pointerdic[' ']}, ofs
+            # otherwise return the pointerdic unaltered
+            else:
                 return {fieldkey: pointerdic}, ofs
         # do the inverse transform
         else:
