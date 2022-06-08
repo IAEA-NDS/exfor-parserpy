@@ -51,7 +51,7 @@ def contains_pointers(dic):
             return False
         if k.isalpha() and k.isupper():
             continue
-        if k.isdigit():
+        if k.isdigit() or k == ' ':
             continue
         return False
     return True
