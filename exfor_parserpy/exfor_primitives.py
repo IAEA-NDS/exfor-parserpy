@@ -47,7 +47,7 @@ def get_pointer(field):
 
 def read_pointered_field(line, pos):
     valstr = read_str_field(line, pos, trim=False)
-    pointer = valstr[10] if len(valstr)>=11 and valstr[10] != ' ' else None
+    pointer = valstr[10] if len(valstr) >= 11 else ' '
     fieldkey = valstr[:10].strip()
     return fieldkey, pointer
 
