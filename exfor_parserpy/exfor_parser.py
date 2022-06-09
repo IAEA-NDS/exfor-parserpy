@@ -9,8 +9,9 @@
 ############################################################
 from os.path import exists
 from .exfor_primitives import (read_str_field, write_str_field,
-        read_pointered_field, read_int_field, read_fields, write_fields,
+        read_pointered_field, read_int_field, write_int_field, read_fields, write_fields,
         update_dic, write_bib_element)
+from .utils.convenience import count_fields, count_points_in_datablock
 from .utils.custom_iterators import search_for_field
 
 class ExforBaseParser(object):
@@ -105,8 +106,12 @@ class ExforBaseParser(object):
         # inverse transform
         else:
             lines = []
-            lines.append(write_str_field('', 0,
-                             'COMMON' if what=='common' else 'DATA'))
+            numfields = count_fields(datadic['DATA'])
+            numlines = 1 if what=='common' else count_points_in_datablock(datadic)
+            headline = write_str_field('', 0, 'COMMON' if what=='common' else 'DATA')
+            headline = write_int_field(headline, 1, numfields)
+            headline = write_int_field(headline, 2, numlines)
+            lines.append(headline)
             ofs += 1
             # prepare descrs, unit and value lists
             descrs = []
