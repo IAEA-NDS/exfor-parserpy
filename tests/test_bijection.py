@@ -5,8 +5,8 @@ from exfor_parserpy.utils.convenience import compare_dictionaries
 
 def test_bijection():
     """Test parsed equals parsed/written/parsed entries."""
-    exfor_path = 'testdata/alldata'
-    #exfor_path = "testdata"
+    # exfor_path = "testdata/alldata"
+    exfor_path = "testdata"
     exfor_files = os.listdir(exfor_path)
     exfor_files = [f for f in exfor_files if f.endswith(".txt")]
     exfor_paths = [os.path.join(exfor_path, f) for f in exfor_files]
@@ -21,3 +21,7 @@ def test_bijection():
             if len(problem_files) > 5:
                 break
     assert len(problem_files) == 0, "errors for:\n{}".format("\n".join(problem_files))
+
+
+if __name__ == "__main__":
+    test_bijection()
