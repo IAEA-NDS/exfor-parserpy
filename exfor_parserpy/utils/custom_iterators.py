@@ -10,6 +10,7 @@
 
 from .convenience import is_dic
 
+
 def exfor_iterator(exfor_dic):
     """Traverse all subdictionaries bottom-up."""
     if is_dic(exfor_dic):
@@ -18,6 +19,7 @@ def exfor_iterator(exfor_dic):
                 yield from exfor_iterator(item)
         yield exfor_dic
 
+
 def exfor_iterator2(exfor_dic, key=None):
     """Traverse all subdictionaries bottom-up."""
     if is_dic(exfor_dic):
@@ -25,6 +27,7 @@ def exfor_iterator2(exfor_dic, key=None):
             if is_dic(item):
                 yield from exfor_iterator2(item, curkey)
         yield key, exfor_dic
+
 
 def exfor_iterator3(exfor_dic, key=None, parent=None, filterfun=None):
     """Traverse all subdictionaries bottom-up."""
@@ -39,10 +42,10 @@ def exfor_iterator3(exfor_dic, key=None, parent=None, filterfun=None):
         # even if filterfun evaluates to True
         yield key, exfor_dic, parent
 
+
 def search_for_field(dic, fieldname):
     """Find value of field by recursion."""
     for curdic in exfor_iterator(dic):
         if fieldname in curdic:
             return curdic[fieldname]
     return None
-

@@ -11,8 +11,12 @@
 
 from copy import deepcopy
 from ..utils.custom_iterators import exfor_iterator2
-from ..utils.convenience import (has_common_block, has_data_block,
-        count_points_in_datablock, merge_common_into_datablock)
+from ..utils.convenience import (
+    has_common_block,
+    has_data_block,
+    count_points_in_datablock,
+    merge_common_into_datablock,
+)
 
 
 def uncommonfy(exfor_dic, delete_common=True):
@@ -35,27 +39,26 @@ def uncommonfy(exfor_dic, delete_common=True):
         # the assumption here is that DATA and COMMON
         # blocks are at the top level of a subentry
         # so we know that curkey contains the subentry accession number.
-        datablock = curdic['DATA']
+        datablock = curdic["DATA"]
         numpoints = count_points_in_datablock(datablock)
         # first incorporate the common block of the first subentry.
         # we only match the first 8 characters to be robust
         # against added suffixes due to pointers or similar
-        first_subid = curkey[:5] + '001'
+        first_subid = curkey[:5] + "001"
         first_subid_ext = first_subid + curkey[8:]
         if first_subid_ext in common_dic:
             first_subid = first_subid_ext
 
         if first_subid in common_dic:
-            commonblock = common_dic[first_subid]['COMMON']
+            commonblock = common_dic[first_subid]["COMMON"]
             merge_common_into_datablock(datablock, commonblock)
         # deal with the common block of the current subentry
         if curkey in common_dic:
-            commonblock = common_dic[curkey]['COMMON']
+            commonblock = common_dic[curkey]["COMMON"]
             merge_common_into_datablock(datablock, commonblock)
     # finally delete all the common blocks if desired
     if delete_common:
         for k, d in common_dic.items():
-            del d['COMMON']
+            del d["COMMON"]
 
     return ret_dic
-
