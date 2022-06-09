@@ -15,7 +15,9 @@ organizational unit will be done eventually.
 The development of this parser was initiated as a
 development project at the IAEA to support the
 efforts of WPEC SG50 to design a machine-readable
-experimental database.
+experimental database. You may also want to follow the
+development of a related EXFOR parser published
+[here](https://github.com/shinokumura/exforparser).
 
 The development of this parser is at an early stage and it
 has not been thoroughly tested yet. If you use it and
