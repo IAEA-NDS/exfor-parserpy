@@ -55,7 +55,7 @@ def read_pointered_field(line, pos):
 
 def write_pointered_field(line, pos, fieldkey, pointer, outkey=True):
     valstr = fieldkey.ljust(10) if outkey else ' '*10
-    valstr+= pointer if pointer else ' '
+    valstr+= pointer[0] if pointer else ' '
     return write_str_field(line, pos, valstr)
 
 def write_bib_element(fieldkey, pointer, content, outkey=True):
