@@ -146,3 +146,35 @@ def compare_dictionaries(dic1, dic2, atol=1e-8, rtol=1e-8, info=True):
             return False
     return True
 
+def init_duplicate_field_counters(descrs):
+    # determine duplicate descrs, e.g., 2x FLAG, see EXFOR formats manual chap. 4
+    dup_dic = {}
+    for curdescr_tuple in descrs:
+        if curdescr_tuple in dup_dic:
+            dup_dic[curdescr_tuple] = True
+        else:
+            dup_dic[curdescr_tuple] = False
+    # only keep the keys associated with duplicated fields
+    # and convert them to counter registers
+    for k in tuple(dup_dic.keys()):
+        if not dup_dic[k]:
+            del dup_dic[k]
+        else:
+            dup_dic[k] = 0
+    return dup_dic
+
+def reset_duplicate_field_counters(counter_dic):
+    for k in counter_dic:
+        counter_dic[k] = 0
+
+def extend_pointer_for_multifield(fieldname, pointer, counter_dic):
+    # we extend the pointer string by an additional
+    # index for fields that occur multiple times
+    # (not necessarily due to pointer)
+    curdescr_tuple = (fieldname, pointer)
+    ext_pointer = pointer
+    if curdescr_tuple in counter_dic:
+        ext_pointer += str(counter_dic[curdescr_tuple])
+        counter_dic[curdescr_tuple] += 1
+    return ext_pointer
+
