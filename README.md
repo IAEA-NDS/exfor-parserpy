@@ -22,6 +22,8 @@ development of a related EXFOR parser published
 The development of this parser is at an early stage and it
 has not been thoroughly tested yet. If you use it and
 encounter any issue, drop us an [email](mailto:g.schnabel@iaea.org).
+If you want to contribute via a pull request, please
+consult the [Contributing](#contributing) section.
 
 ## An example
 
@@ -154,6 +156,19 @@ A transformer is a function that takes a nested dictionary
 resulting from a parse and modifies it in specific ways.
 An example of a transformer has already been provided
 in the example section above.
+
+## Contributing
+
+If you have made an addition to this package and would like
+to contribute it to this project, you may consider performing a
+pull request. By effecting a pull request, you accept that
+the copyright of your contribution, which is the code or
+other information added to this repository, is transferred
+to the IAEA. This ensures that we can change the license in
+the future if required. We stress that if such a change of
+license should ever happen, you can nevertheless continue to
+use any version before the switch of license according to the
+applicable license at that time.
 
 ## Legal note
 
