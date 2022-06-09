@@ -1,4 +1,4 @@
-# exfor-parserpy - v0.1
+# exfor-parserpy
 
 This parser reads the EXFOR format into a
 nested dictionary structure in Python.
