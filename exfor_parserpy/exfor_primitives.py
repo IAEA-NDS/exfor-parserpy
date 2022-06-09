@@ -37,7 +37,7 @@ def read_float_field(line, pos, width=1):
 
 def write_float_field(line, pos, num, width=1):
     if num is not None:
-        valstr = '{:<11g}'.format(num).ljust(width*11)
+        valstr = '{:11.9g}'.format(num).ljust(width*11)
     else:
         valstr = ''
     return write_str_field(line, pos, valstr, width)
