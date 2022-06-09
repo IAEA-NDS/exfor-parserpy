@@ -73,6 +73,15 @@ def has_data_block(dic):
         else:
             return False
 
+def count_fields(dic):
+    numfields = 0
+    for k, val in dic.items():
+        if contains_pointers(val):
+            numfields += len(val)
+        else:
+            numfields += 1
+    return numfields
+
 def count_points_in_datablock(datablock):
     length = -1
     errmsg = ('Not all lists have the same length ' +
