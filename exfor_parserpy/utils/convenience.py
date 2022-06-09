@@ -44,6 +44,8 @@ def is_subentry(dic, key=None):
     return True
 
 def contains_pointers(dic):
+    if not is_dic(dic):
+        return False
     for k in dic:
         if not is_str(k):
             return False
