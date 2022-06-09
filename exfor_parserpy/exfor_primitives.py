@@ -60,6 +60,11 @@ def write_pointered_field(line, pos, fieldkey, pointer, outkey=True):
 
 def write_bib_element(fieldkey, pointer, content, outkey=True):
     content_lines = content.splitlines()
+    # we need to append an empty string
+    # if a trailing newline exists because
+    # splitlines will ignore it
+    if content.endswith('\n'):
+        content_lines.append('')
     curline = write_pointered_field('', 0, fieldkey, pointer, outkey)
     curline = write_str_field(curline, 1, content_lines[0], width=5)
     newlines = [curline]
