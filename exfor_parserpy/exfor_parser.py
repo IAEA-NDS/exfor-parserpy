@@ -11,7 +11,9 @@ from os.path import exists
 from .exfor_primitives import (read_str_field, write_str_field,
         read_pointered_field, read_int_field, write_int_field, read_fields, write_fields,
         update_dic, write_bib_element)
-from .utils.convenience import count_fields, count_points_in_datablock
+from .utils.convenience import (count_fields, count_points_in_datablock,
+        contains_pointers, init_duplicate_field_counters, reset_duplicate_field_counters,
+        extend_pointer_for_multifield)
 from .utils.custom_iterators import search_for_field
 
 class ExforBaseParser(object):
@@ -92,13 +94,18 @@ class ExforBaseParser(object):
             descrs, ofs = read_fields(lines, numfields, ofs, dtype='strp')
             units, ofs = read_fields(lines, numfields, ofs, dtype='str')
             unit_dic = {}
+
+            counter_dic = init_duplicate_field_counters(descrs)
             for i, (curdescr, pointer) in enumerate(descrs):
+                pointer = extend_pointer_for_multifield(curdescr, pointer, counter_dic)
                 update_dic(unit_dic, curdescr, pointer, units[i], arr=False)
 
             value_dic = {}
             for currow in range(numlines):
                 values, ofs = read_fields(lines, numfields, ofs, dtype='float')
+                reset_duplicate_field_counters(counter_dic)
                 for i, (curdescr, pointer) in enumerate(descrs):
+                    pointer = extend_pointer_for_multifield(curdescr, pointer, counter_dic)
                     update_dic(value_dic, curdescr, pointer, values[i], arr=(what=='data'))
 
             resdic = {'UNIT': unit_dic, 'DATA': value_dic}
@@ -117,7 +124,7 @@ class ExforBaseParser(object):
             descrs = []
             units = []
             for fieldkey, cont in datadic['UNIT'].items():
-                if isinstance(cont, dict):
+                if contains_pointers(cont):
                     for pointer in cont:
                         descrs.append((fieldkey, pointer))
                         units.append(datadic['UNIT'][fieldkey][pointer])
@@ -128,12 +135,13 @@ class ExforBaseParser(object):
             curlines = write_fields(descrs, ofs, dtype='strp')
             lines.extend(curlines)
             curlines = write_fields(units, ofs, dtype='str')
+
             lines.extend(curlines)
             # write the data
             if what == 'common':
                 values = []
                 for fieldkey, cont in datadic['UNIT'].items():
-                    if isinstance(cont, dict):
+                    if contains_pointers(cont):
                         for pointer in cont:
                             values.append(datadic['DATA'][fieldkey][pointer])
                     else:
@@ -154,7 +162,7 @@ class ExforBaseParser(object):
                 for currow in range(numlines):
                     values = []
                     for fieldkey, cont in datadic['UNIT'].items():
-                        if isinstance(cont, dict):
+                        if contains_pointers(cont):
                             for pointer in cont:
                                 values.append(datadic['DATA'][fieldkey][pointer][currow])
                         else:
