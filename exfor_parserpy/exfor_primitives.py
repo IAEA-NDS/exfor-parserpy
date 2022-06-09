@@ -28,7 +28,7 @@ def read_int_field(line, pos, width=1):
     return int(valstr)
 
 def write_int_field(line, pos, value, width=1):
-    valstr = '{:<11d}'.format(value).ljust(width*11)
+    valstr = '{:>11d}'.format(value).rjust(width*11)
     return write_str_field(line, pos, valstr, width)
 
 def read_float_field(line, pos, width=1):
