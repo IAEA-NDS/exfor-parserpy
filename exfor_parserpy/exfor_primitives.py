@@ -11,6 +11,8 @@ from .utils.fortran_utils import fortstr2float
 
 def read_str_field(line, pos, width=1, trim=True):
     valstr = line[pos*11:(pos+width)*11]
+    # we remove newline and carriage return in any case
+    valstr = valstr.rstrip('\n').rstrip('\r')
     return valstr.rstrip() if trim else valstr
 
 def write_str_field(line, pos, mystr, width=1, align='left'):
