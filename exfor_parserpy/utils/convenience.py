@@ -72,6 +72,16 @@ def contains_pointers(dic):
     return True
 
 
+def flatten_default_pointer(cont):
+    if contains_only_default_pointer(cont):
+        cont = cont[" "]
+    return cont
+
+
+def contains_only_default_pointer(cont):
+    return is_dic(cont) and len(cont) == 1 and " " in cont
+
+
 def has_common_block(dic):
     if "COMMON" in dic:
         d = dic["COMMON"]
