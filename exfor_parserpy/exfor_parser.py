@@ -23,6 +23,7 @@ from .utils.convenience import (
     count_fields,
     count_points_in_datablock,
     contains_pointers,
+    flatten_default_pointer,
     init_duplicate_field_counters,
     reset_duplicate_field_counters,
     extend_pointer_for_multifield,
@@ -49,18 +50,13 @@ class ExforBaseParser(object):
                 ofs += 1
                 nextfield, nextpointer = read_pointered_field(lines[ofs], 0)
             pointerdic[pointer] = content
-            # if no regular pointers are available,
-            # we collapse the dictionary to a string
-            if len(pointerdic) == 1 and " " in pointerdic:
-                return {fieldkey: pointerdic[" "]}, ofs
-            # otherwise return the pointerdic unaltered
-            else:
-                return {fieldkey: pointerdic}, ofs
+            pointerdic = flatten_default_pointer(pointerdic)
+            return {fieldkey: pointerdic}, ofs
         # do the inverse transform
         else:
             lines = []
             for fieldkey, content in datadic.items():
-                has_pointers = isinstance(content, dict)
+                has_pointers = contains_pointers(content)
                 if not has_pointers:
                     lines.extend(write_bib_element(fieldkey, None, content))
                 else:
@@ -118,6 +114,8 @@ class ExforBaseParser(object):
             for i, (curdescr, pointer) in enumerate(descrs):
                 pointer = extend_pointer_for_multifield(curdescr, pointer, counter_dic)
                 update_dic(unit_dic, curdescr, pointer, units[i], arr=False)
+            for k in unit_dic:
+                unit_dic[k] = flatten_default_pointer(unit_dic[k])
 
             value_dic = {}
             for currow in range(numlines):
@@ -130,6 +128,8 @@ class ExforBaseParser(object):
                     update_dic(
                         value_dic, curdescr, pointer, values[i], arr=(what == "data")
                     )
+            for k in value_dic:
+                value_dic[k] = flatten_default_pointer(value_dic[k])
 
             resdic = {"UNIT": unit_dic, "DATA": value_dic}
             return resdic, ofs
