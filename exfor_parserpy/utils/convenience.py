@@ -49,13 +49,18 @@ def contains_pointers(dic):
     for k in dic:
         if not is_str(k):
             return False
-        if len(k) != 1:
+        # second condition for multifield
+        if len(k) != 1 and len(k) != 2:
             return False
-        if k.isalpha() and k.isupper():
-            continue
-        if k.isdigit() or k == ' ':
-            continue
-        return False
+        pointer = k[0]
+        fieldidx = '' if len(k) == 1 else k[1]
+        # check if the pointer is of correct form
+        if (not (pointer.isalpha() and pointer.isupper()) and
+            not (pointer.isdigit() or pointer == ' ')):
+            return False
+        # check if multifield index is of correct form if available
+        if len(k) == 2 and not fieldidx.isdigit():
+            return False
     return True
 
 def has_common_block(dic):
