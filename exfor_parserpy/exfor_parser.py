@@ -356,4 +356,4 @@ class ExforBaseParser(object):
         lines = self.write(exfor_dic)
         # lines = [l.rstrip('\n').rstrip('\r') + '\n' for l in lines]
         with open(filename, "w") as f:
-            f.writelines(lines)
+            f.write("\n".join(lines))
