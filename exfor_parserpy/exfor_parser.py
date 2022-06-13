@@ -320,7 +320,7 @@ def parse(lines=None, datadic=None, inverse=False, ofs=0):
 
 
 # the user interface
-def read(cont):
+def from_exfor(cont):
     if isinstance(cont, str):
         lines = cont.splitlines()
     elif isinstance(cont, list):
@@ -334,22 +334,22 @@ def read(cont):
     return exfor_dic
 
 
-def write(exfor_dic):
+def to_exfor(exfor_dic):
     lines, _ = parse(datadic=exfor_dic, inverse=True)
     return lines
 
 
-def readfile(filename):
+def read_exfor(filename):
     with open(filename, "r") as f:
         cont = f.readlines()
     cont = [line.rstrip("\n").rstrip("\r") for line in cont]
-    return read(cont)
+    return from_exfor(cont)
 
 
-def writefile(filename, exfor_dic, overwrite=False):
+def write_exfor(filename, exfor_dic, overwrite=False):
     if not overwrite and exists(filename):
         raise FileExistsError(f"The file {filename} already exists")
-    lines = write(exfor_dic)
+    lines = to_exfor(exfor_dic)
     # lines = [l.rstrip('\n').rstrip('\r') + '\n' for l in lines]
     with open(filename, "w") as f:
         f.write("\n".join(lines))
