@@ -31,15 +31,15 @@ The `examples` directory contains already an example of how
 the parser can be used. We reproduce a part of it here.
 Parsing an EXFOR master file can be done by
 ```
-from exfor_parserpy import ExforBaseParser
-parser = ExforBaseParser()
-exfor_dic = parser.readfile('testdata/entry_21308.txt')
+from exfor_parserpy import read_exfor
+exfor_dic = read_exfor('testdata/entry_21308.txt')
 ```
 Now we can make manipulations in the EXFOR
 dictionary and write it back to a file, for instance:
 ```
+from exfor_parserpy import write_exfor
 exfor_dic['21308']['21308001']['BIB']['AUTHOR'] = 'Who is this author?'
-parser.writefile('testoutput.x4', exfor_dic)
+write_exfor('testoutput.x4', exfor_dic)
 ```
 
 Finally, we want to introduce the concept of a *transformer* at the
@@ -51,7 +51,7 @@ This transformer is already included in the package.
 ```
 from exfor_parserpy.trafos import unitfy
 transformed_exfor_dic = unitfy(exfor_dic)
-parser.writefile('trafo_testoutput.x4', transformed_exfor_dic)
+write_exfor('trafo_testoutput.x4', transformed_exfor_dic)
 ```
 
 ## Structure of the result of a parse
