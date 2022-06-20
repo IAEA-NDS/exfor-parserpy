@@ -107,3 +107,29 @@ def eval_expr_tree(expr_tree, eval_fun):
     # not known how to evaluate the node so
     # this must be done by the user_eval_fun
     return eval_fun(expr_tree)
+
+
+def reconstruct_expr_str(expr_tree, recon_fun):
+    # binary operators
+    ntyp = expr_tree["type"]
+    if ntyp in ("add", "sub", "prod", "div"):
+        leftval = reconstruct_expr_str(expr_tree["children"][0], recon_fun)
+        rightval = reconstruct_expr_str(expr_tree["children"][1], recon_fun)
+        if ntyp == "add":
+            return leftval + "+" + rightval
+        elif ntyp == "sub":
+            return leftval + "-" + rightval
+        elif ntyp == "prod":
+            return leftval + "*" + rightval
+        elif ntyp == "div":
+            return leftval + "/" + rightval
+    # unary operators
+    if ntyp in ("neg", "bracket"):
+        val = reconstruct_expr_str(expr_tree["children"][0], recon_fun)
+        if ntyp == "neg":
+            return "-" + val
+        elif ntyp == "bracket":
+            return "(" + val + ")"
+    # not known how to evaluate the node so
+    # this must be done by the user_eval_fun
+    return recon_fun(expr_tree)
