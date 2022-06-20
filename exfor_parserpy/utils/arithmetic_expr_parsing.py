@@ -21,7 +21,7 @@ def get_number(expr, vardic, ofs, comp, ops):
         curstr += expr[ofs]
         ofs += 1
     # try to obtain a number
-    if comp:
+    if comp == "eval":
         try:
             number = float(curstr)
             return number, ofs
@@ -59,7 +59,7 @@ def eval_symbol(expr, vardic, ofs, comp, ops):
     next_char, ofs = get_next_char(expr, ofs)
     if next_char == "-":
         leftval, ofs = eval_symbol(expr, vardic, ofs + 1, comp, ops)
-        if comp:
+        if comp == "eval":
             leftval = -leftval
         else:
             leftval = "-" + leftval
@@ -68,7 +68,7 @@ def eval_symbol(expr, vardic, ofs, comp, ops):
         next_char, ofs = get_next_char(expr, ofs)
         if next_char != ")":
             raise ValueError("bracket not closed")
-        if not comp:
+        if not comp == "eval":
             leftval = "(" + leftval + ")"
         ofs += 1
     elif next_char.isalpha() or next_char.isdigit() or "-":
@@ -77,7 +77,7 @@ def eval_symbol(expr, vardic, ofs, comp, ops):
     next_char, ofs = get_next_char(expr, ofs)
     if next_char == "/":
         rightval, ofs = eval_symbol(expr, vardic, ofs + 1, comp, ops)
-        if comp:
+        if comp == "eval":
             return leftval / rightval, ofs
         else:
             return leftval + "/" + rightval, ofs
@@ -90,7 +90,7 @@ def eval_product(expr, vardic, ofs, comp, ops):
     next_char, ofs = get_next_char(expr, ofs)
     if next_char == "*":
         rightval, ofs = eval_product(expr, vardic, ofs + 1, comp, ops)
-        if comp:
+        if comp == "eval":
             return leftval * rightval, ofs
         else:
             return leftval + "*" + rightval, ofs
@@ -103,13 +103,13 @@ def eval_addition(expr, vardic, ofs, comp, ops):
     next_char, ofs = get_next_char(expr, ofs)
     if next_char == "+":
         rightval, ofs = eval_addition(expr, vardic, ofs + 1, comp, ops)
-        if comp:
+        if comp == "eval":
             return leftval + rightval, ofs
         else:
             return leftval + "+" + rightval, ofs
     elif next_char == "-":
         rightval, ofs = eval_addition(expr, vardic, ofs + 1, comp, ops)
-        if comp:
+        if comp == "eval":
             return leftval - rightval, ofs
         else:
             return leftval + "-" + rightval, ofs
@@ -117,7 +117,7 @@ def eval_addition(expr, vardic, ofs, comp, ops):
         return leftval, ofs
 
 
-def eval_arithm_expr(expr, vardic=None, comp=True, ops="+-*/"):
+def eval_arithm_expr(expr, vardic=None, comp="eval", ops="+-*/"):
     if vardic is None:
         vardic = {}
     value, _ = eval_addition(expr, vardic, ofs=0, comp=comp, ops=ops)

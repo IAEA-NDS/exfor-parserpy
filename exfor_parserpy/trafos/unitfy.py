@@ -64,8 +64,10 @@ def unitfy(exfor_dic):
                 raise TypeError("If UNIT is present, we also expect a DATA key")
             for curfield, curunit in curdic["UNIT"].items():
                 if is_str(curunit):
-                    fact = eval_arithm_expr(curunit, FACTORS_DIC, comp=True, ops=myops)
-                    newunit = eval_arithm_expr(curunit, UNIT_DIC, comp=False, ops=myops)
+                    fact = eval_arithm_expr(
+                        curunit, FACTORS_DIC, comp="eval", ops=myops
+                    )
+                    newunit = eval_arithm_expr(curunit, UNIT_DIC, comp="sub", ops=myops)
                     newdata = apply_factor(curdic["DATA"][curfield], fact)
                     curdic["UNIT"][curfield] = newunit
                     curdic["DATA"][curfield] = newdata
@@ -73,10 +75,10 @@ def unitfy(exfor_dic):
                     # we deal with pointers
                     for curpt, curunit in curunit.items():
                         fact = eval_arithm_expr(
-                            curunit, FACTORS_DIC, comp=True, ops=myops
+                            curunit, FACTORS_DIC, comp="eval", ops=myops
                         )
                         newunit = eval_arithm_expr(
-                            curunit, UNIT_DIC, comp=False, ops=myops
+                            curunit, UNIT_DIC, comp="sub", ops=myops
                         )
                         newdata = apply_factor(curdic["DATA"][curfield][curpt], fact)
                         curdic["UNIT"][curfield][curpt] = newunit
