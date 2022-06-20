@@ -81,3 +81,29 @@ def parse_addition(expr, ofs, parse_usersym):
 
 def parse_arithm_expr(expr, parse_usersym, ofs=0):
     return parse_addition(expr, ofs, parse_usersym)
+
+
+def eval_expr_tree(expr_tree, eval_fun):
+    # binary operators
+    ntyp = expr_tree["type"]
+    if ntyp in ("add", "sub", "prod", "div"):
+        leftval = eval_expr_tree(expr_tree["children"][0], eval_fun)
+        rightval = eval_expr_tree(expr_tree["children"][1], eval_fun)
+        if ntyp == "add":
+            return leftval + rightval
+        elif ntyp == "sub":
+            return leftval - rightval
+        elif ntyp == "prod":
+            return leftval * rightval
+        elif ntyp == "div":
+            return leftval / rightval
+    # unary operators
+    if ntyp in ("neg", "bracket"):
+        val = eval_expr_tree(expr_tree["children"][0], eval_fun)
+        if ntyp == "neg":
+            return -val
+        elif ntyp == "bracket":
+            return val
+    # not known how to evaluate the node so
+    # this must be done by the user_eval_fun
+    return eval_fun(expr_tree)

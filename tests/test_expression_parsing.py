@@ -1,5 +1,8 @@
 import pytest
-from exfor_parserpy.utils.arithmetic_expr_parsing_new import parse_arithm_expr
+from exfor_parserpy.utils.arithmetic_expr_parsing_new import (
+    parse_arithm_expr,
+    eval_expr_tree,
+)
 
 
 def parse_number_str(expr, ofs):
@@ -17,32 +20,6 @@ def eval_number_node(expr_tree):
         return expr_tree["number"]
     else:
         raise TypeError("Invalid node type")
-
-
-def eval_expr_tree(expr_tree, eval_fun):
-    # binary operators
-    ntyp = expr_tree["type"]
-    if ntyp in ("add", "sub", "prod", "div"):
-        leftval = eval_expr_tree(expr_tree["children"][0], eval_fun)
-        rightval = eval_expr_tree(expr_tree["children"][1], eval_fun)
-        if ntyp == "add":
-            return leftval + rightval
-        elif ntyp == "sub":
-            return leftval - rightval
-        elif ntyp == "prod":
-            return leftval * rightval
-        elif ntyp == "div":
-            return leftval / rightval
-    # unary operators
-    if ntyp in ("neg", "bracket"):
-        val = eval_expr_tree(expr_tree["children"][0], eval_fun)
-        if ntyp == "neg":
-            return -val
-        elif ntyp == "bracket":
-            return val
-    # not known how to evaluate the node so
-    # this must be done by the user_eval_fun
-    return eval_fun(expr_tree)
 
 
 @pytest.mark.parametrize(
