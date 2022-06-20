@@ -8,7 +8,12 @@
 #
 ############################################################
 from copy import deepcopy
-from ..utils import apply_factor, eval_arithm_expr, exfor_iterator, is_dic, is_str
+from ..utils import apply_factor, exfor_iterator, is_dic, is_str
+from ..utils.arithmetic_expr_parsing_new import (
+    reconstruct_expr_str,
+    eval_expr_tree,
+    parse_arithm_expr,
+)
 
 
 FACTORS_DIC = {
@@ -44,6 +49,47 @@ UNIT_DIC = {
 }
 
 
+def get_unit_tree(unit_expr_str):
+    def parse_unit_str(expr, ofs):
+        startofs = ofs
+        while ofs < len(expr) and (expr[ofs].isalpha() or expr[ofs] == "-"):
+            ofs += 1
+        node = {}
+        node["type"] = "unit"
+        node["unit"] = expr[startofs:ofs]
+        return node, ofs
+
+    return parse_arithm_expr(unit_expr_str, parse_unit_str)[0]
+
+
+def substitute_unit_str(unit_tree):
+    def subfun(expr_tree):
+        if expr_tree["type"] == "unit":
+            unitstr = expr_tree["unit"]
+            if unitstr in FACTORS_DIC:
+                return UNIT_DIC[unitstr]
+            else:
+                return unitstr
+        else:
+            raise TypeError("Not a node with a unit")
+
+    return reconstruct_expr_str(unit_tree, subfun)
+
+
+def compute_conversion_factor(unit_tree):
+    def eval_factor(expr_tree):
+        if expr_tree["type"] == "unit":
+            unitstr = expr_tree["unit"]
+            if unitstr in FACTORS_DIC:
+                return FACTORS_DIC[unitstr]
+            else:
+                return 1
+        else:
+            raise TypeError("Not a node with a unit")
+
+    return eval_expr_tree(unit_tree, eval_factor)
+
+
 def unitfy(exfor_dic):
     """convert all units to MeV and xs to mbarn
 
@@ -64,22 +110,18 @@ def unitfy(exfor_dic):
                 raise TypeError("If UNIT is present, we also expect a DATA key")
             for curfield, curunit in curdic["UNIT"].items():
                 if is_str(curunit):
-                    fact = eval_arithm_expr(
-                        curunit, FACTORS_DIC, comp="eval", ops=myops
-                    )
-                    newunit = eval_arithm_expr(curunit, UNIT_DIC, comp="sub", ops=myops)
+                    unit_tree = get_unit_tree(curunit)
+                    fact = compute_conversion_factor(unit_tree)
+                    newunit = substitute_unit_str(unit_tree)
                     newdata = apply_factor(curdic["DATA"][curfield], fact)
                     curdic["UNIT"][curfield] = newunit
                     curdic["DATA"][curfield] = newdata
                 elif is_dic(curunit):
                     # we deal with pointers
                     for curpt, curunit in curunit.items():
-                        fact = eval_arithm_expr(
-                            curunit, FACTORS_DIC, comp="eval", ops=myops
-                        )
-                        newunit = eval_arithm_expr(
-                            curunit, UNIT_DIC, comp="sub", ops=myops
-                        )
+                        unit_tree = get_unit_tree(curunit)
+                        fact = compute_conversion_factor(unit_tree)
+                        newunit = substitute_unit_str(unit_tree)
                         newdata = apply_factor(curdic["DATA"][curfield][curpt], fact)
                         curdic["UNIT"][curfield][curpt] = newunit
                         curdic["DATA"][curfield][curpt] = newdata
