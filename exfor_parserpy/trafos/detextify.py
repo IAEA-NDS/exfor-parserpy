@@ -42,8 +42,8 @@ def detextify(exfor_dic, keep_original_field=False):
             if contains_pointers(fieldcont):
                 for curpointer, fieldcont2 in fieldcont.items():
                     code_list, text_list = split_code_and_text(fieldcont2)
-                    bibsec.set_default(code_fieldname, {})
-                    bibsec.set_default(text_fieldname, {})
+                    bibsec.setdefault(code_fieldname, {})
+                    bibsec.setdefault(text_fieldname, {})
                     bibsec[code_fieldname][curpointer] = code_list
                     bibsec[text_fieldname][curpointer] = text_list
             else:
