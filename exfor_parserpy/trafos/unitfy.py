@@ -52,6 +52,8 @@ UNIT_DIC = {
 def get_unit_tree(unit_expr_str):
     def parse_unit_str(expr, ofs):
         startofs = ofs
+        # the minus sign is included because
+        # it appears in unit names such as PER-CENT
         while ofs < len(expr) and (expr[ofs].isalpha() or expr[ofs] == "-"):
             ofs += 1
         node = {}
@@ -97,10 +99,6 @@ def unitfy(exfor_dic):
     # we do not want to change it in place
     # for the time being
     ret_dic = deepcopy(exfor_dic)
-    # we discard the minus sign as an operator
-    # because it appears in EXFOR in symbol names
-    # e.g., PER-CENT, ERR-2
-    myops = "+*/"
     # go through all dictionaries and identify
     # physics data indicated by the presence of
     # the UNIT and DATA dictionaries

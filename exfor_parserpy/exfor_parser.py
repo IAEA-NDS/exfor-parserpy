@@ -350,6 +350,5 @@ def write_exfor(filename, exfor_dic, overwrite=False):
     if not overwrite and exists(filename):
         raise FileExistsError(f"The file {filename} already exists")
     lines = to_exfor(exfor_dic)
-    # lines = [l.rstrip('\n').rstrip('\r') + '\n' for l in lines]
     with open(filename, "w") as f:
         f.write("\n".join(lines))
