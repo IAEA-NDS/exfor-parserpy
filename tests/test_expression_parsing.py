@@ -1,5 +1,5 @@
 import pytest
-from exfor_parserpy.utils.arithmetic_expr_parsing_new import (
+from exfor_parserpy.utils.arithmetic_expr_parsing import (
     parse_arithm_expr,
     eval_expr_tree,
     reconstruct_expr_str,

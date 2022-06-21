@@ -9,7 +9,7 @@
 ############################################################
 from copy import deepcopy
 from ..utils import apply_factor, exfor_iterator, is_dic, is_str
-from ..utils.arithmetic_expr_parsing_new import (
+from ..utils.arithmetic_expr_parsing import (
     reconstruct_expr_str,
     eval_expr_tree,
     parse_arithm_expr,
