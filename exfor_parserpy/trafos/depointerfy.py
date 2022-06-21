@@ -34,9 +34,7 @@ def depointerfy(exfor_dic, delete_pointered_subents=True):
         for fieldname, fieldcont in inneriter:
             if contains_pointers(fieldcont):
                 curpointers = set(fieldcont.keys())
-                if len(pointers) != 0 and pointers != curpointers:
-                    raise IndexError(f"Inconsistent pointers in subentry {subentid}")
-                pointers = curpointers
+                pointers = pointers.union(curpointers)
         # duplicate subentries with pointers
         # and use the values of a specific pointer in each of them.
         for curpointer in pointers:
@@ -44,7 +42,10 @@ def depointerfy(exfor_dic, delete_pointered_subents=True):
             inneriter = tuple(exfor_iterator3(newsubent))
             for fieldname, fieldcont, parent_of_field in inneriter:
                 if contains_pointers(fieldcont):
-                    parent_of_field[fieldname] = fieldcont[curpointer]
+                    if curpointer in fieldcont:
+                        parent_of_field[fieldname] = fieldcont[curpointer]
+                    else:
+                        del parent_of_field[fieldname]
             # construct an extended subentry id
             pointered_subentid = subentid + curpointer
             newsubent["__subentid"] = pointered_subentid
