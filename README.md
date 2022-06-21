@@ -25,6 +25,24 @@ encounter any issue, drop us an [email](mailto:g.schnabel@iaea.org).
 If you want to contribute via a pull request, please
 consult the [Contributing](#contributing) section.
 
+## Installation
+
+This package can be installed and tested using `poetry` so
+make sure poetry is installed (e.g. by `pip install poetry`).
+Download or clone this repository, change into the directory
+of this repository and execute:
+```
+poetry install
+```
+Afterwards, you can activate a virtual environment
+where the `exfor-parserpy` package and its dependencies are
+already installed:
+```
+poetry shell
+```
+Now you are set to run the examples in the
+`examples/` folder or the example in the next section.
+
 ## An example
 
 The `examples` directory contains already an example of how
