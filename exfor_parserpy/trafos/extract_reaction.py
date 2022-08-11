@@ -4,10 +4,6 @@ import pyparsing
 import json
 from collections.abc import Iterable
 
-sys.path.append("..")
-from exfor_parserpy.utils.reaction_expr_parse import *
-
-
 
 def flatten(xs):
     for x in xs:
@@ -49,53 +45,79 @@ def split_sfs(sf49):
         sf7 = len(sf49) > 3 and sf49[3] or None
         sf8 = len(sf49) > 4 and sf49[4] or None
         sf9 = len(sf49) > 5 and sf49[5] or None
-    return {"sf4": sf4,
-            "sf5": sf5,
-            "sf6": sf6,
-            "sf7": sf7,
-            "sf8": sf8,
-            "sf9": sf9,}
+    return {
+        "sf4": sf4,
+        "sf5": sf5,
+        "sf6": sf6,
+        "sf7": sf7,
+        "sf8": sf8,
+        "sf9": sf9,
+    }
+
+def reconstruct_reaction_nodes(types, reaction_node):
+    new = {}
+    for n in types:
+        if n%2 == 1 and types[n] != "reaction":
+            new["type"] = types[n]
+            new["children"] = [{"type": "reaction", "children": reaction_node[x]} for x in range(n-1,n+1) ]
+        else:
+            new["type"] = types[n]
+            new["children"] = reaction_node[n]
+            
+    # print(json.dumps(new, indent=1))
+
+    return new
+
 
 
 def parse_reaction(reaction_str):
     # pos_left, pos_right = parse_parenthesis(reaction_str, 0)
     # print(pos_left, pos_right)
 
+    # parse the reaction string inside parentheses
     charinreaction = "-+/,*. "
-    thecontent = pyparsing.Word(
-                    pyparsing.alphanums + charinreaction
-                )
+    thecontent = pyparsing.Word(pyparsing.alphanums + charinreaction)
     parentheses = pyparsing.nestedExpr("(", ")", content=thecontent)
-    free_text   = pyparsing.nestedExpr("(", ")", content=thecontent).suppress() + pyparsing.rest_of_line(reaction_str)
-    a = parentheses.parseString(reaction_str).as_list()
-    b = free_text.parseString(reaction_str)  
-
-    reaction_node = {}
+    free_text = pyparsing.nestedExpr(
+        "(", ")", content=thecontent
+    ).suppress() + pyparsing.rest_of_line(reaction_str)
 
     nuclide = re.compile("([0-9]{1,3}-[A-Z0-9]{1,3}-[0-9]{1,3})$")
     process = re.compile("([A-Z0-9]{1,3},[A-Z0-9]{1,4})")
     params = re.compile("([A-Z0-9-+,\/\(\)]*)")
 
-    node = 0
+    # parse the reaction string inside parentheses 
+    a = parentheses.parseString(reaction_str).as_list()
+    # parse freetext after reaction string
+    b = free_text.parseString(reaction_str)
+
     reaction_node = {}
     subnode = {}
-
+    node = 0
+    types = {}
+    
     for exp in list(flatten(a)):
         if exp.startswith(("/", "*", "-", "+")):
             node += 1
-            reaction_node[node] = subnode
+            # reaction_node[node] = subnode
             subnode = {}
 
             if exp.startswith("/"):
-                subnode["node_arithmetic_exp"] = "ratio"
+                types[node] = "ratio"
+
             elif exp.startswith("*"):
-                subnode["node_arithmetic_exp"] = "product"
+                types[node] = "product"
+
             elif exp.startswith("+"):
-                subnode["node_arithmetic_exp"] = "plus"
+                types[node] = "plus"
+
             elif exp.startswith("-"):
-                subnode["node_arithmetic_exp"] = "minus"
+                types[node] = "minus"
+        
 
         elif nuclide.match(exp):
+            if not types.get(node):
+                types[node] = "reaction"
             subnode["target"] = nuclide.match(exp).groups()[0]
 
         elif process.match(exp):
@@ -104,11 +126,20 @@ def parse_reaction(reaction_str):
         elif params.match(exp):
             subnode.update(split_sfs(params.match(exp).groups()[0].split(",")))
             reaction_node[node] = subnode
-    
-    if b:
-        reaction_node["freetext"] = " ".join(b)
-
-    print(json.dumps(reaction_node, indent=1))
         
 
+    assert len(types) -- len(subnode)
+
+    # print(json.dumps(reaction_node, indent=1))
+    new = reconstruct_reaction_nodes(types,reaction_node)
+    
+
+    if b:
+        new["freetext"] = " ".join(b)
+    
+    # print(new)
+
+
+test_str = "(92-U-235(N,ABS),,ETA,,MXW) Value = 2.077 prt/reac (test)"
+parse_reaction(test_str)
 
