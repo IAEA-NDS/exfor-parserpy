@@ -3,15 +3,11 @@
 # Author(s):       Georg Schnabel
 # Email:           g.schnabel@iaea.org
 # Creation date:   2022/05/19
-# Last modified:   2022/05/19
+# Last modified:   2022/09/04
 # License:         MIT
 # Copyright (c) 2022 International Atomic Energy Agency (IAEA)
 #
 ############################################################
-
-# NOTE: Parsing of code blocks can be done smarter than
-#       using the regular expression in split_code_and_text
-#       below. This should be improved in the future.
 
 from copy import deepcopy
 from ..utils.custom_iterators import exfor_iterator3
@@ -56,16 +52,50 @@ def detextify(exfor_dic, keep_original_field=False):
 
 
 def split_code_and_text(string):
-    m = re.findall(r"\(([^)]+)\)([^(]*)", string)
+    # strategy: if there isn't an opening bracket
+    # in the first position, the field contains free
+    # text only. Otherwise the field contains one
+    # or more codes in a bracket pair potentially
+    # followed by free text. A field can contain
+    # codes in several brackets but then each
+    # bracket pair must start on a new line.
     code_list = []
     text_list = []
-    if not m:
-        code_list.append("")
-        text_list.append(string)
+    code_locations = find_code_brackets(string)
+    if len(code_locations) == 0:
+        code_list = [""]
+        text_list = string
     else:
-        for token in m:
-            code = token[0].strip()
-            text = token[1].strip()
-            code_list.append(code)
-            text_list.append(text)
+        for i, (start, stop) in enumerate(code_locations):
+            curcode = string[start + 1 : stop]
+            curcode = curcode.replace("\n", "").replace("\r", "")
+            code_list.append(curcode)
+            if len(code_locations) > i + 1:
+                next_pos = code_locations[i + 1][0]
+            else:
+                next_pos = len(string)
+            curtext = string[stop + 1 : next_pos]
+            text_list.append(curtext)
     return code_list, text_list
+
+
+def find_code_brackets(string):
+    cnt = 0
+    in_bracket = False
+    start_pos = -1
+    is_new_line = True
+    bracket_pairs = []
+    for curpos, c in enumerate(string):
+        if c == "(" and (is_new_line or in_bracket):
+            cnt += 1
+            if not in_bracket:
+                start_pos = curpos
+                in_bracket = True
+        elif c == ")" and in_bracket:
+            cnt -= 1
+            if cnt == 0:
+                in_bracket = False
+                bracket_pairs.append((start_pos, curpos))
+                startpos = -1
+        is_new_line = c == "\n"
+    return bracket_pairs
