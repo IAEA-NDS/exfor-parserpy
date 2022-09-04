@@ -1,7 +1,7 @@
 from pathlib import Path
 import pytest
 from exfor_parserpy import read_exfor
-from exfor_parserpy.trafos import unitfy, depointerfy, uncommonfy, detextify
+from exfor_parserpy.trafos import unitfy, depointerfy, uncommonfy, detextify, tablify
 
 
 def test_unitfy_never_fails(entry_file):
@@ -34,3 +34,17 @@ def test_uncommonfy_never_fails(entry_file):
         uncommonfy(content)
     except Exception as exc:
         assert False, f"uncommonfy failed on file {entry_file} with exception {exc}"
+
+
+def test_tablify_never_fails(entry_file):
+    content = read_exfor(entry_file)
+    entryid = tuple(content.keys())[0]
+    if len(content[entryid]) == 1 and tuple(content[entryid].keys())[0].endswith("001"):
+        # if there is only the first subentry present,
+        # tablify is expected to fail
+        assert True
+        return
+    try:
+        tablify(content)
+    except Exception as exc:
+        assert False, f"tablify failed on file {entry_file} with exception {exc}"
