@@ -102,10 +102,10 @@ def parse_reaction(reaction_str):
     assert len(types) - -len(subnode)
 
     new = reconstruct_reaction_nodes(types, reaction_node)
-
     if b:
         new["freetext"] = " ".join(b)
+    return new
 
 
-test_str = "(92-U-235(N,ABS),,ETA,,MXW) Value = 2.077 prt/reac (test)"
-parse_reaction(test_str)
+# test_str = "(92-U-235(N,ABS),,ETA,,MXW) Value = 2.077 prt/reac (test)"
+# parse_reaction(test_str)
