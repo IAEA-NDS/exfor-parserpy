@@ -13,30 +13,6 @@ def flatten(xs):
             yield x
 
 
-def parse_parenthesis(expr, ofs):
-    pos_left = []
-    pos_right = []
-    count_left = 0
-    count_right = 0
-
-    while ofs < len(expr):
-
-        if expr[ofs] == "(":
-            count_left += 1
-            pos_left += [ofs]
-
-        if expr[ofs] == ")":
-            count_right += 1
-            pos_right += [ofs]
-
-        ofs += 1
-        if count_left == count_right:
-            break
-
-    assert len(pos_left) == len(pos_right)
-    return pos_left, pos_right
-
-
 def split_sfs(sf49):
     if sf49:
         sf4 = len(sf49) > 0 and sf49[0] or None
@@ -54,20 +30,23 @@ def split_sfs(sf49):
         "sf9": sf9,
     }
 
+
 def reconstruct_reaction_nodes(types, reaction_node):
     new = {}
     for n in types:
-        if n%2 == 1 and types[n] != "reaction":
+        if n % 2 == 1 and types[n] != "reaction":
             new["type"] = types[n]
-            new["children"] = [{"type": "reaction", "children": reaction_node[x]} for x in range(n-1,n+1) ]
+            new["children"] = [
+                {"type": "reaction", "children": reaction_node[x]}
+                for x in range(n - 1, n + 1)
+            ]
         else:
             new["type"] = types[n]
             new["children"] = reaction_node[n]
-            
+
     # print(json.dumps(new, indent=1))
 
     return new
-
 
 
 def parse_reaction(reaction_str):
@@ -86,7 +65,7 @@ def parse_reaction(reaction_str):
     process = re.compile("([A-Z0-9]{1,3},[A-Z0-9]{1,4})")
     params = re.compile("([A-Z0-9-+,\/\(\)]*)")
 
-    # parse the reaction string inside parentheses 
+    # parse the reaction string inside parentheses
     a = parentheses.parseString(reaction_str).as_list()
     # parse freetext after reaction string
     b = free_text.parseString(reaction_str)
@@ -95,7 +74,7 @@ def parse_reaction(reaction_str):
     subnode = {}
     node = 0
     types = {}
-    
+
     for exp in list(flatten(a)):
         if exp.startswith(("/", "*", "-", "+")):
             node += 1
@@ -113,7 +92,6 @@ def parse_reaction(reaction_str):
 
             elif exp.startswith("-"):
                 types[node] = "minus"
-        
 
         elif nuclide.match(exp):
             if not types.get(node):
@@ -126,20 +104,17 @@ def parse_reaction(reaction_str):
         elif params.match(exp):
             subnode.update(split_sfs(params.match(exp).groups()[0].split(",")))
             reaction_node[node] = subnode
-        
 
-    assert len(types) -- len(subnode)
+    assert len(types) - -len(subnode)
 
     # print(json.dumps(reaction_node, indent=1))
-    new = reconstruct_reaction_nodes(types,reaction_node)
-    
+    new = reconstruct_reaction_nodes(types, reaction_node)
 
     if b:
         new["freetext"] = " ".join(b)
-    
+
     # print(new)
 
 
 test_str = "(92-U-235(N,ABS),,ETA,,MXW) Value = 2.077 prt/reac (test)"
 parse_reaction(test_str)
-
