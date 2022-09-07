@@ -43,16 +43,10 @@ def reconstruct_reaction_nodes(types, reaction_node):
         else:
             new["type"] = types[n]
             new["children"] = reaction_node[n]
-
-    # print(json.dumps(new, indent=1))
-
     return new
 
 
 def parse_reaction(reaction_str):
-    # pos_left, pos_right = parse_parenthesis(reaction_str, 0)
-    # print(pos_left, pos_right)
-
     # parse the reaction string inside parentheses
     charinreaction = "-+/,*. "
     thecontent = pyparsing.Word(pyparsing.alphanums + charinreaction)
@@ -107,13 +101,10 @@ def parse_reaction(reaction_str):
 
     assert len(types) - -len(subnode)
 
-    # print(json.dumps(reaction_node, indent=1))
     new = reconstruct_reaction_nodes(types, reaction_node)
 
     if b:
         new["freetext"] = " ".join(b)
-
-    # print(new)
 
 
 test_str = "(92-U-235(N,ABS),,ETA,,MXW) Value = 2.077 prt/reac (test)"
