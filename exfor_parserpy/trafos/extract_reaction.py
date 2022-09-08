@@ -49,18 +49,19 @@ def parse_reaction(reaction_str):
     subnode = {}
     types = {}
 
-    for exp in list(flatten(a)):
-        if nuclide.match(exp):
-            subnode["target"] = nuclide.match(exp).groups()[0]
+    reaction_str = reaction_str[1:-1]
+    nuclide = reaction_str[: reaction_str.index("(")]
+    subnode["target"] = nuclide
 
-        elif process.match(exp):
-            subnode["process"] = process.match(exp).groups()[0]
+    process = reaction_str[reaction_str.index("(") + 1 : reaction_str.index(")")]
+    subnode["process"] = process
 
-        elif params.match(exp):
-            subnode.update(split_sfs(params.match(exp).groups()[0].split(",")))
-            reaction_node = subnode
+    params = reaction_str[reaction_str.index(")") + 1 :]
+    sf49 = params.split(",")
+    for i, sf in enumerate(sf49):
+        subnode["SF" + str(i + 4)] = sf
 
-    return reaction_node
+    return subnode
 
 
 def parse_reaction_expression(reaction_str):
