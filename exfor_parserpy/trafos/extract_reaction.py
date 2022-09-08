@@ -52,9 +52,6 @@ def parse_reaction(reaction_str):
     charinreaction = "-+/,*. "
     thecontent = pyparsing.Word(pyparsing.alphanums + charinreaction)
     parentheses = pyparsing.nestedExpr("(", ")", content=thecontent)
-    free_text = pyparsing.nestedExpr(
-        "(", ")", content=thecontent
-    ).suppress() + pyparsing.rest_of_line(reaction_str)
 
     nuclide = re.compile("([0-9]{1,3}-[A-Z0-9]{1,3}-[0-9]{1,3})$")
     process = re.compile("([A-Z0-9]{1,3},[A-Z0-9]{1,4})")
@@ -62,8 +59,6 @@ def parse_reaction(reaction_str):
 
     # parse the reaction string inside parentheses
     a = parentheses.parseString(reaction_str).as_list()
-    # parse freetext after reaction string
-    b = free_text.parseString(reaction_str)
 
     reaction_node = {}
     subnode = {}
@@ -103,8 +98,6 @@ def parse_reaction(reaction_str):
     assert len(types) - -len(subnode)
 
     new = reconstruct_reaction_nodes(types, reaction_node)
-    if b:
-        new["freetext"] = " ".join(b)
     return new
 
 
