@@ -66,24 +66,7 @@ def parse_reaction(reaction_str):
     types = {}
 
     for exp in list(flatten(a)):
-        if exp.startswith(("/", "*", "-", "+")):
-            node += 1
-            # reaction_node[node] = subnode
-            subnode = {}
-
-            if exp.startswith("/"):
-                types[node] = "ratio"
-
-            elif exp.startswith("*"):
-                types[node] = "product"
-
-            elif exp.startswith("+"):
-                types[node] = "plus"
-
-            elif exp.startswith("-"):
-                types[node] = "minus"
-
-        elif nuclide.match(exp):
+        if nuclide.match(exp):
             if not types.get(node):
                 types[node] = "reaction"
             subnode["target"] = nuclide.match(exp).groups()[0]
