@@ -207,14 +207,15 @@ def extend_pointer_for_multifield(fieldname, pointer, counter_dic):
     return ext_pointer
 
 
-def find_brackets(string):
+def find_brackets(string, exfor_code_mode=True):
     cnt = 0
     in_bracket = False
     start_pos = -1
     is_new_line = True
     bracket_pairs = []
     for curpos, c in enumerate(string):
-        if c == "(" and (is_new_line or in_bracket):
+        allow_open_bracket = is_new_line or not exfor_code_mode
+        if c == "(" and (allow_open_bracket or in_bracket):
             cnt += 1
             if not in_bracket:
                 start_pos = curpos
