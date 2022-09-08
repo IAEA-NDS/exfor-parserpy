@@ -90,6 +90,12 @@ def column_iterator(elem, path=None, sep=".", pointersep="#"):
             ("COMMON", "DATA"),
             ("COMMON", "UNIT"),
         )
+    # there can be the case DATA/DATA/DATA, in other words
+    # a DATA field in the DATA table of the DATA section.
+    # here pointers may occur and we need to reverse the
+    # heuristic above.
+    if path is not None and len(path) >= 3 and path[-3:] == ("DATA", "DATA", "DATA"):
+        no_pointer = False
 
     has_pointers = contains_pointers(elem) and not no_pointer
     if is_dic(elem) and not has_pointers:
