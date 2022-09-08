@@ -1,7 +1,14 @@
 from pathlib import Path
 import pytest
 from exfor_parserpy import read_exfor
-from exfor_parserpy.trafos import unitfy, depointerfy, uncommonfy, detextify, tablify
+from exfor_parserpy.trafos import (
+    unitfy,
+    depointerfy,
+    uncommonfy,
+    detextify,
+    tablify,
+    reactify,
+)
 
 
 def test_unitfy_never_fails(entry_file):
@@ -48,3 +55,11 @@ def test_tablify_never_fails(entry_file):
         tablify(content)
     except Exception as exc:
         assert False, f"tablify failed on file {entry_file} with exception {exc}"
+
+
+def test_reactify_never_fails(entry_file):
+    content = read_exfor(entry_file)
+    try:
+        reactify(content)
+    except Exception as exc:
+        assert False, f"reactify failed on file {entry_file} with exception {exc}"
