@@ -1,3 +1,13 @@
+############################################################
+#
+# Author(s):       Shin Okumura, Georg Schnabel
+# Creation date:   2022/08/09
+# Last modified:   2022/09/08
+# License:         MIT
+# Copyright (c) 2022 International Atomic Energy Agency (IAEA)
+#
+############################################################
+
 from ..utils.convenience import find_brackets, is_subentry, contains_pointers
 from ..utils.custom_iterators import exfor_iterator3
 
