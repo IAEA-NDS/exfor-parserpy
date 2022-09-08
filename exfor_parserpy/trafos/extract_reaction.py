@@ -48,20 +48,64 @@ def parse_reaction(reaction_str):
 def parse_reaction_expression(reaction_str):
     def recfun(reacstr):
         bracket_locs = find_brackets(reacstr, exfor_code_mode=False)
-        if reacstr[: bracket_locs[0][0]].strip() != "":
+
+        # we identified a basic reaction string
+        if reacstr.strip()[0] != "(":
             reacdic = parse_reaction(reacstr)
             reacdic["type"] = "reaction"
             return reacdic
 
-        elif len(bracket_locs) == 2:
-            # we deal with an arithmetic expression
-            optype = reacstr[bracket_locs[0][1] + 1 : bracket_locs[1][0] - 1].strip()
-            childexpr1 = recfun(reacstr[bracket_locs[0][0] + 1 : bracket_locs[0][1]])
-            childexpr2 = recfun(reacstr[bracket_locs[1][0] + 1 : bracket_locs[1][1]])
-            return {"type": optype, "terms": [childexpr1, childexpr2]}
+        # a superfluous bracket pairs are removed like the layers of an onion
+        elif len(bracket_locs) == 1:
+            return recfun(reacstr[bracket_locs[0][0] + 1 : bracket_locs[0][1]])
 
-        else:
-            raise ValueError("invalid reaction string")
+        # more bracket pairs indicate operations, such as sums
+        elif len(bracket_locs) >= 2:
+            # extract the operators
+            ops = []
+            for i in range(len(bracket_locs) - 1):
+                op_start_idx = bracket_locs[i][1] + 1
+                op_end_idx = bracket_locs[i + 1][0]
+                ops.append(reacstr[op_start_idx:op_end_idx].strip())
+
+            if len(ops) > 1 and ops[0] == "+":
+                if not all([x == "+" for x in ops]):
+                    raise ValueError("mix of addition with other operators not allowed")
+
+            elif len(ops) > 1 and ops[0] == "*":
+                prod_end_pos = len(ops) - 1
+                for i in range(len(ops)):
+                    if ops[i] != "*":
+                        prod_end_pos = i - 1
+                        break
+                    leftstr = reacstr[: bracket_locs[prod_end_pos][1] + 1]
+                    rightstr = reacstr[bracket_locs[prod_end_pos + 1][0] :]
+                    terms = []
+                    terms.append(recfun(leftstr))
+                    terms.append(recfun(rightstr))
+                    return {"type": "*", "terms": terms}
+
+            elif any([x == "=" for x in ops]):
+                equal_pos = ops.index("=")
+                leftstr = reacstr[: bracket_locs[equal_pos][1] + 1]
+                rightstr = reacstr[bracket_locs[equal_pos + 1][0] :]
+                terms = []
+                terms.append(recfun(leftstr))
+                terms.append(recfun(rightstr))
+                return {"type": "=", "terms": terms}
+
+            elif len(ops) > 1:
+                raise ValueError("only single operator allowed")
+
+            # we deal with an arithmetic expression
+            terms = []
+            for cur_bracket_loc in bracket_locs:
+                cont_start = cur_bracket_loc[0] + 1
+                cont_end = cur_bracket_loc[1]
+                terminfo = recfun(reacstr[cont_start:cont_end])
+                terms.append(terminfo)
+
+            return {"type": ops[0], "terms": terms}
 
     bracket_locs = find_brackets(reaction_str, exfor_code_mode=True)
     if len(bracket_locs) == 0 or bracket_locs[0][0] != 0:
