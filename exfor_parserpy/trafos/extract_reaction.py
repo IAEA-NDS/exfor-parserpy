@@ -8,12 +8,14 @@
 #
 ############################################################
 
+from copy import deepcopy
 from ..utils.convenience import find_brackets, is_subentry, contains_pointers
 from ..utils.custom_iterators import exfor_iterator3
 
 
 def reactify(exfor_dic, reacexpr_field="reaction_expr"):
-    outeriter = exfor_iterator3(exfor_dic, filterfun=is_subentry)
+    ret_dic = deepcopy(exfor_dic)
+    outeriter = exfor_iterator3(ret_dic, filterfun=is_subentry)
     for subentid, subent, parent_of_subent in outeriter:
         if not is_subentry(subent, subentid):
             continue
@@ -30,6 +32,7 @@ def reactify(exfor_dic, reacexpr_field="reaction_expr"):
                 bibsec[reacexpr_field][pt] = bibsec[reacexpr_field][
                     pt
                 ] = parse_reaction_expression(reacstr)
+    return ret_dic
 
 
 def parse_reaction(reaction_str):
