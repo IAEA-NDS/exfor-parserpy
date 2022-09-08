@@ -33,34 +33,16 @@ def split_sfs(sf49):
 
 
 def parse_reaction(reaction_str):
-    # parse the reaction string inside parentheses
-    charinreaction = "-+/,*. "
-    thecontent = pyparsing.Word(pyparsing.alphanums + charinreaction)
-    parentheses = pyparsing.nestedExpr("(", ")", content=thecontent)
-
-    nuclide = re.compile("([0-9]{1,3}-[A-Z0-9]{1,3}-[0-9]{1,3})$")
-    process = re.compile("([A-Z0-9]{1,3},[A-Z0-9]{1,4})")
-    params = re.compile("([A-Z0-9-+,\/\(\)]*)")
-
-    # parse the reaction string inside parentheses
-    a = parentheses.parseString(reaction_str).as_list()
-
-    reaction_node = {}
     subnode = {}
-    types = {}
-
     reaction_str = reaction_str[1:-1]
     nuclide = reaction_str[: reaction_str.index("(")]
     subnode["target"] = nuclide
-
     process = reaction_str[reaction_str.index("(") + 1 : reaction_str.index(")")]
     subnode["process"] = process
-
     params = reaction_str[reaction_str.index(")") + 1 :]
     sf49 = params.split(",")
     for i, sf in enumerate(sf49):
         subnode["SF" + str(i + 4)] = sf
-
     return subnode
 
 
