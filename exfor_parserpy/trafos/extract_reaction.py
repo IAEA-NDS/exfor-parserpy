@@ -62,13 +62,10 @@ def parse_reaction(reaction_str):
 
     reaction_node = {}
     subnode = {}
-    node = 0
     types = {}
 
     for exp in list(flatten(a)):
         if nuclide.match(exp):
-            if not types.get(node):
-                types[node] = "reaction"
             subnode["target"] = nuclide.match(exp).groups()[0]
 
         elif process.match(exp):
@@ -76,12 +73,9 @@ def parse_reaction(reaction_str):
 
         elif params.match(exp):
             subnode.update(split_sfs(params.match(exp).groups()[0].split(",")))
-            reaction_node[node] = subnode
+            reaction_node = subnode
 
-    assert len(types) - -len(subnode)
-
-    new = reconstruct_reaction_nodes(types, reaction_node)
-    return new
+    return reaction_node
 
 
 def parse_reaction_expression(reaction_str):
