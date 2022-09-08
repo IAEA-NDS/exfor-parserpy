@@ -32,21 +32,6 @@ def split_sfs(sf49):
     }
 
 
-def reconstruct_reaction_nodes(types, reaction_node):
-    new = {}
-    for n in types:
-        if n % 2 == 1 and types[n] != "reaction":
-            new["type"] = types[n]
-            new["children"] = [
-                {"type": "reaction", "children": reaction_node[x]}
-                for x in range(n - 1, n + 1)
-            ]
-        else:
-            new["type"] = types[n]
-            new["children"] = reaction_node[n]
-    return new
-
-
 def parse_reaction(reaction_str):
     # parse the reaction string inside parentheses
     charinreaction = "-+/,*. "
