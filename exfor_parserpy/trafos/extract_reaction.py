@@ -6,32 +6,6 @@ from collections.abc import Iterable
 from ..utils.convenience import find_brackets
 
 
-def flatten(xs):
-    for x in xs:
-        if isinstance(x, Iterable) and not isinstance(x, (str, bytes)):
-            yield from flatten(x)
-        else:
-            yield x
-
-
-def split_sfs(sf49):
-    if sf49:
-        sf4 = len(sf49) > 0 and sf49[0] or None
-        sf5 = len(sf49) > 1 and sf49[1] or None
-        sf6 = len(sf49) > 2 and sf49[2] or None
-        sf7 = len(sf49) > 3 and sf49[3] or None
-        sf8 = len(sf49) > 4 and sf49[4] or None
-        sf9 = len(sf49) > 5 and sf49[5] or None
-    return {
-        "sf4": sf4,
-        "sf5": sf5,
-        "sf6": sf6,
-        "sf7": sf7,
-        "sf8": sf8,
-        "sf9": sf9,
-    }
-
-
 def parse_reaction(reaction_str):
     subnode = {}
     reaction_str = reaction_str[1:-1]
