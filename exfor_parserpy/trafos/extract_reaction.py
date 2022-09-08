@@ -34,7 +34,6 @@ def reactify(exfor_dic, reacexpr_field="reaction_expr"):
 
 def parse_reaction(reaction_str):
     reacinfo = {}
-    reaction_str = reaction_str[1:-1]
     nuclide = reaction_str[: reaction_str.index("(")]
     reacinfo["target"] = nuclide
     process = reaction_str[reaction_str.index("(") + 1 : reaction_str.index(")")]
@@ -50,7 +49,7 @@ def parse_reaction_expression(reaction_str):
     def recfun(reacstr):
         bracket_locs = find_brackets(reacstr, exfor_code_mode=False)
         if reacstr[: bracket_locs[0][0]].strip() != "":
-            reacdic = parse_reaction("(" + reacstr + ")")
+            reacdic = parse_reaction(reacstr)
             reacdic["type"] = "reaction"
             return reacdic
 
