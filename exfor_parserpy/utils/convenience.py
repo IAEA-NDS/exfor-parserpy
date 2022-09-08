@@ -3,7 +3,7 @@
 # Author(s):       Georg Schnabel
 # Email:           g.schnabel@iaea.org
 # Creation date:   2022/05/04
-# Last modified:   2022/05/15
+# Last modified:   2022/09/07
 # License:         MIT
 # Copyright (c) 2022 International Atomic Energy Agency (IAEA)
 #
@@ -205,3 +205,25 @@ def extend_pointer_for_multifield(fieldname, pointer, counter_dic):
         ext_pointer += str(counter_dic[curdescr_tuple])
         counter_dic[curdescr_tuple] += 1
     return ext_pointer
+
+
+def find_brackets(string):
+    cnt = 0
+    in_bracket = False
+    start_pos = -1
+    is_new_line = True
+    bracket_pairs = []
+    for curpos, c in enumerate(string):
+        if c == "(" and (is_new_line or in_bracket):
+            cnt += 1
+            if not in_bracket:
+                start_pos = curpos
+                in_bracket = True
+        elif c == ")" and in_bracket:
+            cnt -= 1
+            if cnt == 0:
+                in_bracket = False
+                bracket_pairs.append((start_pos, curpos))
+                startpos = -1
+        is_new_line = c == "\n"
+    return bracket_pairs

@@ -3,7 +3,7 @@
 # Author(s):       Georg Schnabel
 # Email:           g.schnabel@iaea.org
 # Creation date:   2022/05/19
-# Last modified:   2022/09/04
+# Last modified:   2022/09/07
 # License:         MIT
 # Copyright (c) 2022 International Atomic Energy Agency (IAEA)
 #
@@ -11,7 +11,7 @@
 
 from copy import deepcopy
 from ..utils.custom_iterators import exfor_iterator3
-from ..utils.convenience import is_subentry, contains_pointers
+from ..utils.convenience import is_subentry, contains_pointers, find_brackets
 import re
 
 
@@ -77,25 +77,3 @@ def split_code_and_text(string):
             curtext = string[stop + 1 : next_pos]
             text_list.append(curtext)
     return code_list, text_list
-
-
-def find_brackets(string):
-    cnt = 0
-    in_bracket = False
-    start_pos = -1
-    is_new_line = True
-    bracket_pairs = []
-    for curpos, c in enumerate(string):
-        if c == "(" and (is_new_line or in_bracket):
-            cnt += 1
-            if not in_bracket:
-                start_pos = curpos
-                in_bracket = True
-        elif c == ")" and in_bracket:
-            cnt -= 1
-            if cnt == 0:
-                in_bracket = False
-                bracket_pairs.append((start_pos, curpos))
-                startpos = -1
-        is_new_line = c == "\n"
-    return bracket_pairs
