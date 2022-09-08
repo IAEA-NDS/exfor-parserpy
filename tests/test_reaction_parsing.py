@@ -2,7 +2,7 @@ import pytest
 import sys
 
 sys.path.append("..")
-from exfor_parserpy.trafos.extract_reaction import parse_reaction_expression
+from exfor_parserpy.trafos.reactify import parse_reaction_expression
 
 
 @pytest.mark.parametrize(
