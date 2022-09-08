@@ -1,4 +1,25 @@
-from ..utils.convenience import find_brackets
+from ..utils.convenience import find_brackets, is_subentry, contains_pointers
+from ..utils.custom_iterators import exfor_iterator3
+
+
+def reactify(exfor_dic, reacexpr_field="reaction_expr"):
+    outeriter = exfor_iterator3(exfor_dic, filterfun=is_subentry)
+    for subentid, subent, parent_of_subent in outeriter:
+        if not is_subentry(subent, subentid):
+            continue
+        if "BIB" not in subent:
+            continue
+        if "REACTION" not in subent["BIB"]:
+            continue
+        bibsec = subent["BIB"]
+        if not contains_pointers(bibsec["REACTION"]):
+            bibsec[reacexpr_field] = parse_reaction_expression(bibsec["REACTION"])
+        else:
+            bibsec[reacexpr_field] = {}
+            for pt, reacstr in bibsec["REACTION"].items():
+                bibsec[reacexpr_field][pt] = bibsec[reacexpr_field][
+                    pt
+                ] = parse_reaction_expression(reacstr)
 
 
 def parse_reaction(reaction_str):
