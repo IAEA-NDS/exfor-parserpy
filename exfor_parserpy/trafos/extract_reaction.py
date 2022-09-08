@@ -7,17 +7,17 @@ from ..utils.convenience import find_brackets
 
 
 def parse_reaction(reaction_str):
-    subnode = {}
+    reacinfo = {}
     reaction_str = reaction_str[1:-1]
     nuclide = reaction_str[: reaction_str.index("(")]
-    subnode["target"] = nuclide
+    reacinfo["target"] = nuclide
     process = reaction_str[reaction_str.index("(") + 1 : reaction_str.index(")")]
-    subnode["process"] = process
+    reacinfo["process"] = process
     params = reaction_str[reaction_str.index(")") + 1 :]
     sf49 = params.split(",")
     for i, sf in enumerate(sf49):
-        subnode["SF" + str(i + 4)] = sf
-    return subnode
+        reacinfo["SF" + str(i + 4)] = sf
+    return reacinfo
 
 
 def parse_reaction_expression(reaction_str):
