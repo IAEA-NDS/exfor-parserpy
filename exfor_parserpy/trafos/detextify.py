@@ -61,7 +61,7 @@ def split_code_and_text(string):
     # bracket pair must start on a new line.
     code_list = []
     text_list = []
-    code_locations = find_code_brackets(string)
+    code_locations = find_brackets(string)
     if len(code_locations) == 0:
         code_list = [""]
         text_list = string
@@ -79,7 +79,7 @@ def split_code_and_text(string):
     return code_list, text_list
 
 
-def find_code_brackets(string):
+def find_brackets(string):
     cnt = 0
     in_bracket = False
     start_pos = -1
