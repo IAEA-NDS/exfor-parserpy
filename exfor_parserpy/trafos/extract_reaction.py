@@ -28,14 +28,7 @@ def parse_reaction_expression(reaction_str):
             optype = reacstr[bracket_locs[0][1] + 1 : bracket_locs[1][0] - 1].strip()
             childexpr1 = recfun(reacstr[bracket_locs[0][0] + 1 : bracket_locs[0][1]])
             childexpr2 = recfun(reacstr[bracket_locs[1][0] + 1 : bracket_locs[1][1]])
-            optypes = {
-                "/": "ratio",
-                "*": "product",
-                "+": "sum",
-                "-": "difference",
-                "//": "ratio2",
-            }
-            return {"type": optypes[optype], "terms": [childexpr1, childexpr2]}
+            return {"type": optype, "terms": [childexpr1, childexpr2]}
 
         else:
             raise ValueError("invalid reaction string")
