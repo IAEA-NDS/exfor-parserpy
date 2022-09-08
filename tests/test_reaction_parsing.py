@@ -2,7 +2,7 @@ import pytest
 import sys
 
 sys.path.append("..")
-from exfor_parserpy.trafos.extract_reaction import parse_reaction
+from exfor_parserpy.trafos.extract_reaction import parse_reaction_expression
 
 
 @pytest.mark.parametrize(
@@ -18,5 +18,5 @@ from exfor_parserpy.trafos.extract_reaction import parse_reaction
     ),
 )
 def test_reaction_parsing(test_str):
-    ret = parse_reaction(test_str)
+    ret = parse_reaction_expression(test_str)
     # TODO: implement test
