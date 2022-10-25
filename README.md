@@ -33,7 +33,7 @@ For instance, with conda this can be done by
 conda create -y -n exfor-parserpy pip
 conda activate exfor-parserpy
 ```
-Afterwards, you can the install `exfor-paserpy` using pip:
+Afterwards, you can install `exfor-paserpy` using pip:
 ```
 pip install git+https://github.com/iaea-nds/exfor-parserpy.git
 ```
