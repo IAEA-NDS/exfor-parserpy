@@ -27,21 +27,16 @@ consult the [Contributing](#contributing) section.
 
 ## Installation
 
-This package can be installed and tested using `poetry` so
-make sure poetry is installed (e.g. by `pip install poetry`).
-Download or clone this repository, change into the directory
-of this repository and execute:
+We recommend the creation of a virtual environment.
+For instance, with conda this can be done by
 ```
-poetry install
+conda create -y -n exfor-parserpy pip
+conda activate exfor-parserpy
 ```
-Afterwards, you can activate a virtual environment
-where the `exfor-parserpy` package and its dependencies are
-already installed:
+Afterwards, you can the install `exfor-paserpy` using pip:
 ```
-poetry shell
+pip install git+https://github.com/iaea-nds/exfor-parserpy.git
 ```
-Now you are set to run the examples in the
-`examples/` folder or the example in the next section.
 
 ## An example
 
