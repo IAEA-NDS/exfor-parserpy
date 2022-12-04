@@ -66,6 +66,10 @@ def depointerfy(exfor_dic, delete_pointered_subents=True):
 
                 if found_curpointer:
                     parent_of_field[fieldname] = new_fieldcont
+                else:
+                    # contains a pointer but not current one
+                    # so we delete this field
+                    del parent_of_field[fieldname]
             # construct an extended subentry id
             pointered_subentid = subentid + curpointer
             newsubent["__subentid"] = pointered_subentid
