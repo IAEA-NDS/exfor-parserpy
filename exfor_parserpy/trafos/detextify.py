@@ -48,7 +48,7 @@ def detextify(exfor_dic, keep_original_field=False):
                 bibsec[text_fieldname] = text_list
             if not keep_original_field:
                 del bibsec[fieldname]
-        return ret_dic
+    return ret_dic
 
 
 def split_code_and_text(string):
