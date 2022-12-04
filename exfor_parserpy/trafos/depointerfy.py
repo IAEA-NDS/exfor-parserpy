@@ -11,7 +11,13 @@
 
 from copy import deepcopy
 from ..utils.custom_iterators import exfor_iterator2, exfor_iterator3
-from ..utils.convenience import contains_pointers, is_subentry
+from ..utils.convenience import (
+    contains_pointers,
+    is_subentry,
+    get_pointername,
+    get_multifield_index,
+    combine_pointer_and_multifield_index,
+)
 
 
 def depointerfy(exfor_dic, delete_pointered_subents=True):
@@ -33,19 +39,33 @@ def depointerfy(exfor_dic, delete_pointered_subents=True):
         inneriter = exfor_iterator2(subent)
         for fieldname, fieldcont in inneriter:
             if contains_pointers(fieldcont):
-                curpointers = set(fieldcont.keys())
-                pointers = pointers.union(curpointers)
+                curpointers = set(get_pointername(k) for k in fieldcont.keys())
+                if not (len(curpointers) == 1 and " " in curpointers):
+                    pointers = pointers.union(curpointers)
         # duplicate subentries with pointers
         # and use the values of a specific pointer in each of them.
         for curpointer in pointers:
             newsubent = deepcopy(subent)
             inneriter = tuple(exfor_iterator3(newsubent))
             for fieldname, fieldcont, parent_of_field in inneriter:
-                if contains_pointers(fieldcont):
-                    if curpointer in fieldcont:
-                        parent_of_field[fieldname] = fieldcont[curpointer]
-                    else:
-                        del parent_of_field[fieldname]
+                if not contains_pointers(fieldcont):
+                    continue
+                found_curpointer = False
+                new_fieldcont = {}
+                for curkey in fieldcont:
+                    if get_pointername(curkey) == curpointer:
+                        found_curpointer = True
+                        multifield_idx = get_multifield_index(curkey)
+                        if multifield_idx is None:
+                            new_fieldcont = fieldcont[curpointer]
+                        else:
+                            newkey = combine_pointer_and_multifield_index(
+                                " ", multifield_idx
+                            )
+                            new_fieldcont[newkey] = fieldcont[curkey]
+
+                if found_curpointer:
+                    parent_of_field[fieldname] = new_fieldcont
             # construct an extended subentry id
             pointered_subentid = subentid + curpointer
             newsubent["__subentid"] = pointered_subentid
