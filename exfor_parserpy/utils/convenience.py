@@ -31,13 +31,23 @@ def is_str(obj):
     return isinstance(obj, str)
 
 
-def is_subent_id(string):
-    if not is_str(string) and len(string) != 8:
+def is_subent_id(string, accept_pointer=True):
+    if not is_str(string):
         return False
-    for c in string:
+    elif len(string) not in (8, 9):
+        return False
+    if len(string) == 9 and not accept_pointer:
+        return False
+    for c in string[:8]:
         if not c.isalpha() and not c.isdigit():
             return False
         elif c.isalpha() and not c.isupper():
+            return False
+    if len(string) == 9:
+        pointer = string[8:]
+        if not accept_pointer:
+            return False
+        elif not is_valid_pointername(pointer, accept_multifield_index=False):
             return False
     return True
 
@@ -50,7 +60,7 @@ def is_subentry(dic, key=None):
     return True
 
 
-def is_valid_pointername(fieldname):
+def is_valid_pointername(fieldname, accept_multifield_index=True):
     if not is_str(fieldname):
         return False
     elif len(fieldname) not in (1, 2):
@@ -62,8 +72,11 @@ def is_valid_pointername(fieldname):
     ):
         return False
     # check if multifield index is of correct form if available
-    if len(fieldname) == 2 and not fieldname[1].isdigit():
-        return False
+    if len(fieldname) == 2:
+        if not accept_multifield_index:
+            return False
+        elif not fieldname[1].isdigit():
+            return False
     return True
 
 
@@ -87,10 +100,14 @@ def get_pointername(fieldname):
 
 
 def get_multifield_index(fieldname):
-    if not is_multifield_pointer:
+    if not is_multifield_pointer(fieldname):
         return None
     else:
         return fieldname[1]
+
+
+def combine_pointer_and_multifield_index(pointer, index):
+    return pointer + index
 
 
 def flatten_default_pointer(cont):
