@@ -50,26 +50,47 @@ def is_subentry(dic, key=None):
     return True
 
 
+def is_valid_pointername(fieldname):
+    if not is_str(fieldname):
+        return False
+    elif len(fieldname) not in (1, 2):
+        return False
+    # check if the pointer is of correct form
+    pointer = fieldname[0]
+    if not (pointer.isalpha() and pointer.isupper()) and not (
+        pointer.isdigit() or pointer == " "
+    ):
+        return False
+    # check if multifield index is of correct form if available
+    if len(fieldname) == 2 and not fieldname[1].isdigit():
+        return False
+    return True
+
+
 def contains_pointers(dic):
     if not is_dic(dic):
         return False
     for k in dic:
-        if not is_str(k):
-            return False
-        # second condition for multifield
-        if len(k) != 1 and len(k) != 2:
-            return False
-        pointer = k[0]
-        fieldidx = "" if len(k) == 1 else k[1]
-        # check if the pointer is of correct form
-        if not (pointer.isalpha() and pointer.isupper()) and not (
-            pointer.isdigit() or pointer == " "
-        ):
-            return False
-        # check if multifield index is of correct form if available
-        if len(k) == 2 and not fieldidx.isdigit():
+        if not is_valid_pointername(k):
             return False
     return True
+
+
+def is_multifield_pointer(fieldname):
+    if not is_valid_pointername(fieldname):
+        return False
+    return len(fieldname) == 2
+
+
+def get_pointername(fieldname):
+    return fieldname[0]
+
+
+def get_multifield_index(fieldname):
+    if not is_multifield_pointer:
+        return None
+    else:
+        return fieldname[1]
 
 
 def flatten_default_pointer(cont):
