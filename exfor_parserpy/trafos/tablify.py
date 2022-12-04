@@ -53,7 +53,7 @@ def tablify(exfor_dic, sep=".", pointersep="#", keep_toplevel=False):
 
     entry_groups = other_subent_df.groupby(by=["ENTRY"])
     for cur_group in entry_groups:
-        curdf = cur_group[1].dropna(axis=1)
+        curdf = cur_group[1].dropna(axis=1, how="all")
         curdf.reset_index(inplace=True)
         try:
             firstsub = first_subent_df.loc[cur_group[0]].copy()
