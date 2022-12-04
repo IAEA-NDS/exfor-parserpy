@@ -19,9 +19,8 @@ experimental database. You may also want to follow the
 development of a related EXFOR parser published
 [here](https://github.com/shinokumura/exforparser).
 
-The development of this parser is at an early stage and it
-has not been thoroughly tested yet. If you use it and
-encounter any issue, drop us an [email](mailto:g.schnabel@iaea.org).
+If you encounter any issues with this parser,
+feel free to send an [email](mailto:g.schnabel@iaea.org).
 If you want to contribute via a pull request, please
 consult the [Contributing](#contributing) section.
 
