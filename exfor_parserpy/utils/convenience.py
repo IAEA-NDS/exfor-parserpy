@@ -175,7 +175,14 @@ def merge_common_into_datablock(datablock, commonblock):
     for curkey, curitem in commonblock["UNIT"].items():
         datablock["UNIT"][curkey] = curitem
     for curkey, curval in commonblock["DATA"].items():
-        datablock["DATA"][curkey] = [curval for i in range(numpoints)]
+        if not contains_pointers(curval):
+            datablock["DATA"][curkey] = [curval for i in range(numpoints)]
+        else:
+            curdic = {}
+            for curpt in curval:
+                curval2 = curval[curpt]
+                curdic[curpt] = [curval2 for i in range(numpoints)]
+            datablock["DATA"][curkey] = curdic
 
 
 def compare_dictionaries(dic1, dic2, atol=1e-8, rtol=1e-8, info=True):
