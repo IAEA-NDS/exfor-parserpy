@@ -80,12 +80,14 @@ def is_valid_pointername(fieldname, accept_multifield_index=True):
     return True
 
 
-def contains_pointers(dic):
+def contains_pointers(dic, accept_pointername_E=True):
     if not is_dic(dic):
         return False
     for k in dic:
         if not is_valid_pointername(k):
             return False
+    if "E" in dic and len(dic) == 1 and not accept_pointername_E:
+        return False
     return True
 
 
