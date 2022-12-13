@@ -1,6 +1,7 @@
 from pathlib import Path
 import pytest
 from exfor_parserpy import read_exfor
+from exfor_parserpy.utils.convenience import compare_dictionaries
 from exfor_parserpy.trafos import (
     unitfy,
     depointerfy,
@@ -63,3 +64,16 @@ def test_reactify_never_fails(entry_file):
         reactify(content)
     except Exception as exc:
         assert False, f"reactify failed on file {entry_file} with exception {exc}"
+
+
+def test_uncommonfy_depointerfy_commutativity(entry_file):
+    content = read_exfor(entry_file)
+    try:
+        exfor_dic1 = depointerfy(uncommonfy(content))
+        exfor_dic2 = uncommonfy(depointerfy(content))
+        assert compare_dictionaries(exfor_dic1, exfor_dic2)
+    except Exception as exc:
+        assert False, (
+            f"chaining of depointerfy and uncommonfy "
+            f"failed on file {entry_file} with exception {exc}"
+        )
