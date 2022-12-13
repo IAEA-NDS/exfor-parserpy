@@ -133,6 +133,8 @@ def has_common_block(dic):
 def has_data_block(dic):
     if "DATA" in dic:
         d = dic["DATA"]
+        if not is_dic(d):
+            return False
         if "DATA" in d and "UNIT" in d:
             return True
         else:
