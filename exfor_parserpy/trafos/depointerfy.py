@@ -36,9 +36,14 @@ def depointerfy(exfor_dic, delete_pointered_subents=True):
             continue
         # collect all the pointers in the current subentry
         pointers = set()
-        inneriter = exfor_iterator2(subent)
-        for fieldname, fieldcont in inneriter:
-            if contains_pointers(fieldcont):
+        inneriter = exfor_iterator3(subent)
+        for parent_dic, fieldname, fieldcont in inneriter:
+            accept_pointername_E = (
+                isinstance(parent_dic, dict)
+                and "UNIT" not in parent_dic
+                and "DATA" not in parent_dic
+            )
+            if contains_pointers(fieldcont, accept_pointername_E):
                 curpointers = set(get_pointername(k) for k in fieldcont.keys())
                 if not (len(curpointers) == 1 and " " in curpointers):
                     pointers = pointers.union(curpointers)
