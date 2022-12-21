@@ -45,6 +45,9 @@ def parse_reaction(reaction_str):
     sf49 = params.split(",")
     for i, sf in enumerate(sf49):
         reacinfo["SF" + str(i + 4)] = sf
+    # we also add the fields that were omitted at the end of the string
+    for i in range(4 + len(sf49), 10):
+        reacinfo["SF" + str(i)] = ""
     return reacinfo
 
 
