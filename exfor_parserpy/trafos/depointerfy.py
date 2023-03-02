@@ -37,7 +37,7 @@ def depointerfy(exfor_dic, delete_pointered_subents=True):
         # collect all the pointers in the current subentry
         pointers = set()
         inneriter = exfor_iterator3(subent)
-        for parent_dic, fieldname, fieldcont in inneriter:
+        for fieldname, fieldcont, parent_dic in inneriter:
             accept_pointername_E = (
                 isinstance(parent_dic, dict)
                 and "UNIT" not in parent_dic
