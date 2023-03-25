@@ -69,27 +69,27 @@ def output_bib_element(datadic, ofs=0):
     return lines, ofs
 
 
-def parse_bib(lines=None, datadic=None, inverse=False, ofs=0):
-    if not inverse:
-        datadic = {}
-        if read_str_field(lines[ofs], 0) != "BIB":
-            raise TypeError("not a BIB block")
-        ofs += 1
-        while ofs < len(lines) and read_str_field(lines[ofs], 0) != "ENDBIB":
-            field, ofs = parse_bib_element(lines, ofs)
-            datadic.update(field)
-        return datadic, ofs
-    # inverse transform
-    else:
-        lines = []
-        lines.append(write_str_field("", 0, "BIB"))
-        ofs += 1
-        for key, value in datadic.items():
-            curlines, ofs = output_bib_element({key: value}, ofs)
-            lines.extend(curlines)
-        lines.append(write_str_field("", 0, "ENDBIB"))
-        ofs += 1
-        return lines, ofs
+def parse_bib(lines, ofs=0):
+    datadic = {}
+    if read_str_field(lines[ofs], 0) != "BIB":
+        raise TypeError("not a BIB block")
+    ofs += 1
+    while ofs < len(lines) and read_str_field(lines[ofs], 0) != "ENDBIB":
+        field, ofs = parse_bib_element(lines, ofs)
+        datadic.update(field)
+    return datadic, ofs
+
+
+def output_bib(datadic, ofs=0):
+    lines = []
+    lines.append(write_str_field("", 0, "BIB"))
+    ofs += 1
+    for key, value in datadic.items():
+        curlines, ofs = output_bib_element({key: value}, ofs)
+        lines.extend(curlines)
+    lines.append(write_str_field("", 0, "ENDBIB"))
+    ofs += 1
+    return lines, ofs
 
 
 def parse_common_or_data(lines=None, datadic=None, inverse=False, ofs=0, what="common"):
@@ -207,7 +207,7 @@ def parse_subentry(lines=None, datadic=None, inverse=False, ofs=0, auxinfo=None)
         while ofs < len(lines) and read_str_field(lines[ofs], 0) != "ENDSUBENT":
             curfield = read_str_field(lines[ofs], 0)
             if curfield == "BIB":
-                bibsec, ofs = parse_bib(lines, datadic, inverse, ofs)
+                bibsec, ofs = parse_bib(lines, ofs)
                 datadic["BIB"] = bibsec
 
             if curfield == "COMMON":
@@ -236,7 +236,7 @@ def parse_subentry(lines=None, datadic=None, inverse=False, ofs=0, auxinfo=None)
         ofs += 1
         if "BIB" in datadic:
             curdic = datadic["BIB"]
-            curlines, ofs = parse_bib(lines, curdic, inverse, ofs)
+            curlines, ofs = output_bib(curdic, ofs)
             lines.extend(curlines)
         if "COMMON" in datadic:
             curdic = datadic["COMMON"]
