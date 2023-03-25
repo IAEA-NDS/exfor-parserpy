@@ -1,7 +1,7 @@
 from pathlib import Path
 import pytest
 from exfor_parserpy import read_exfor
-from exfor_parserpy.utils.convenience import compare_dictionaries
+from exfor_parserpy.utils.comparison_utils import compare_dictionaries
 from exfor_parserpy.trafos import (
     unitfy,
     depointerfy,

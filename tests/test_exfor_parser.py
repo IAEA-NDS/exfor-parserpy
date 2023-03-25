@@ -1,7 +1,7 @@
 from pathlib import Path
 import pytest
 from exfor_parserpy import from_exfor, to_exfor, read_exfor, write_exfor
-from exfor_parserpy.utils.convenience import compare_dictionaries
+from exfor_parserpy.utils.comparison_utils import compare_dictionaries
 
 
 def test_exforbaseparser_write_and_read_roundtrip_leaves_content_unchanged(entry_file):
