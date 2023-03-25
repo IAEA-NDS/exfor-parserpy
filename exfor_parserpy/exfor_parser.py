@@ -243,45 +243,46 @@ def output_subentry(datadic, ofs=0, auxinfo=None):
     return lines, ofs
 
 
-def parse_entry(lines=None, datadic=None, inverse=False, ofs=0, auxinfo=None):
-    if not inverse:
-        datadic = {"subentries": []}
-        if read_str_field(lines[ofs], 0) != "ENTRY":
-            raise TypeError("not an ENTRY block")
-        if auxinfo is None:
-            auxinfo = {}
-        auxinfo["entryid"] = read_str_field(lines[ofs], 1).strip()
-        ofs += 1
-        datadic = {}
-        while ofs < len(lines) and read_str_field(lines[ofs], 0) != "ENDENTRY":
-            if read_str_field(lines[ofs], 0) == "SUBENT":
-                subentid = read_str_field(lines[ofs], 1).strip()
-                subent, ofs = parse_subentry(lines, ofs, auxinfo=auxinfo)
-                datadic[subentid] = subent
-            else:
-                ofs += 1
-        # advance ofs after ENDENTRY line
-        ofs += 1
-        return datadic, ofs
-    else:
-        lines = []
-        # locate the first subentry id among the subentries
-        # in the current entry dictionary and extract the
-        # entry id from that
-        first_subentid = search_for_field(datadic, "__subentid")
-        if not first_subentid:
-            raise IndexError("No subentry identification number found")
-        entryid = first_subentid[:5]
-        entry_line = write_str_field("", 0, "ENTRY")
-        entry_line = write_str_field(entry_line, 1, entryid, align="right")
-        lines.append(entry_line)
-        ofs += 1
-        for cursubent, curdic in datadic.items():
-            curlines, ofs = output_subentry(curdic, ofs)
-            lines.extend(curlines)
-        lines.append(write_str_field("", 0, "ENDENTRY"))
-        ofs += 1
-        return lines, ofs
+def parse_entry(lines, ofs=0, auxinfo=None):
+    datadic = {"subentries": []}
+    if read_str_field(lines[ofs], 0) != "ENTRY":
+        raise TypeError("not an ENTRY block")
+    if auxinfo is None:
+        auxinfo = {}
+    auxinfo["entryid"] = read_str_field(lines[ofs], 1).strip()
+    ofs += 1
+    datadic = {}
+    while ofs < len(lines) and read_str_field(lines[ofs], 0) != "ENDENTRY":
+        if read_str_field(lines[ofs], 0) == "SUBENT":
+            subentid = read_str_field(lines[ofs], 1).strip()
+            subent, ofs = parse_subentry(lines, ofs, auxinfo=auxinfo)
+            datadic[subentid] = subent
+        else:
+            ofs += 1
+    # advance ofs after ENDENTRY line
+    ofs += 1
+    return datadic, ofs
+
+
+def output_entry(datadic, ofs=0, auxinfo=None):
+    lines = []
+    # locate the first subentry id among the subentries
+    # in the current entry dictionary and extract the
+    # entry id from that
+    first_subentid = search_for_field(datadic, "__subentid")
+    if not first_subentid:
+        raise IndexError("No subentry identification number found")
+    entryid = first_subentid[:5]
+    entry_line = write_str_field("", 0, "ENTRY")
+    entry_line = write_str_field(entry_line, 1, entryid, align="right")
+    lines.append(entry_line)
+    ofs += 1
+    for cursubent, curdic in datadic.items():
+        curlines, ofs = output_subentry(curdic, ofs)
+        lines.extend(curlines)
+    lines.append(write_str_field("", 0, "ENDENTRY"))
+    ofs += 1
+    return lines, ofs
 
 
 def parse(lines=None, datadic=None, inverse=False, ofs=0):
@@ -290,7 +291,7 @@ def parse(lines=None, datadic=None, inverse=False, ofs=0):
         while ofs < len(lines):
             if read_str_field(lines[ofs], 0) == "ENTRY":
                 entryid = read_str_field(lines[ofs], 1).strip()
-                entry, ofs = parse_entry(lines, None, inverse, ofs)
+                entry, ofs = parse_entry(lines, ofs)
                 datadic[entryid] = entry
             else:
                 ofs += 1
@@ -298,7 +299,7 @@ def parse(lines=None, datadic=None, inverse=False, ofs=0):
     else:
         lines = []
         for curentryid, curdic in datadic.items():
-            curlines, ofs = parse_entry(lines, curdic, inverse, ofs)
+            curlines, ofs = output_entry(curdic, ofs)
             lines.extend(curlines)
         return lines, ofs
 
