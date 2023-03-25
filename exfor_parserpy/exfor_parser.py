@@ -31,44 +31,42 @@ from .utils.convenience import (
 from .utils.custom_iterators import search_for_field
 
 
-def parse_bib_element(lines=None, datadic=None, inverse=False, ofs=0):
-    if not inverse:
-        pointerdic = {}
-        fieldkey, pointer = read_pointered_field(lines[ofs], 0)
-        content = read_str_field(lines[ofs], 1, 5)
+def parse_bib_element(lines, ofs=0):
+    pointerdic = {}
+    fieldkey, pointer = read_pointered_field(lines[ofs], 0)
+    content = read_str_field(lines[ofs], 1, 5)
+    ofs += 1
+    nextfield, nextpointer = read_pointered_field(lines[ofs], 0)
+    while nextfield == "":
+        if nextpointer != " ":
+            pointerdic[pointer] = content
+            pointer = nextpointer
+            content = ""
+        else:
+            content += "\n"
+        content += read_str_field(lines[ofs], 1, 5)
         ofs += 1
         nextfield, nextpointer = read_pointered_field(lines[ofs], 0)
-        while nextfield == "":
-            if nextpointer != " ":
-                pointerdic[pointer] = content
-                pointer = nextpointer
-                content = ""
-            else:
-                content += "\n"
-            content += read_str_field(lines[ofs], 1, 5)
-            ofs += 1
-            nextfield, nextpointer = read_pointered_field(lines[ofs], 0)
-        pointerdic[pointer] = content
-        pointerdic = flatten_default_pointer(pointerdic)
-        return {fieldkey: pointerdic}, ofs
-    # do the inverse transform
-    else:
-        lines = []
-        for fieldkey, content in datadic.items():
-            has_pointers = contains_pointers(content)
-            if not has_pointers:
-                lines.extend(write_bib_element(fieldkey, None, content))
-            else:
-                first = True
-                for pointer in content:
-                    lines.extend(
-                        write_bib_element(
-                            fieldkey, pointer, content[pointer], outkey=first
-                        )
-                    )
-                    first = False
-        ofs += len(lines)
-        return lines, ofs
+    pointerdic[pointer] = content
+    pointerdic = flatten_default_pointer(pointerdic)
+    return {fieldkey: pointerdic}, ofs
+
+
+def output_bib_element(datadic, ofs=0):
+    lines = []
+    for fieldkey, content in datadic.items():
+        has_pointers = contains_pointers(content)
+        if not has_pointers:
+            lines.extend(write_bib_element(fieldkey, None, content))
+        else:
+            first = True
+            for pointer in content:
+                lines.extend(
+                    write_bib_element(fieldkey, pointer, content[pointer], outkey=first)
+                )
+                first = False
+    ofs += len(lines)
+    return lines, ofs
 
 
 def parse_bib(lines=None, datadic=None, inverse=False, ofs=0):
@@ -78,7 +76,7 @@ def parse_bib(lines=None, datadic=None, inverse=False, ofs=0):
             raise TypeError("not a BIB block")
         ofs += 1
         while ofs < len(lines) and read_str_field(lines[ofs], 0) != "ENDBIB":
-            field, ofs = parse_bib_element(lines, datadic, inverse, ofs)
+            field, ofs = parse_bib_element(lines, ofs)
             datadic.update(field)
         return datadic, ofs
     # inverse transform
@@ -87,7 +85,7 @@ def parse_bib(lines=None, datadic=None, inverse=False, ofs=0):
         lines.append(write_str_field("", 0, "BIB"))
         ofs += 1
         for key, value in datadic.items():
-            curlines, ofs = parse_bib_element(lines, {key: value}, inverse, ofs)
+            curlines, ofs = output_bib_element({key: value}, ofs)
             lines.extend(curlines)
         lines.append(write_str_field("", 0, "ENDBIB"))
         ofs += 1
