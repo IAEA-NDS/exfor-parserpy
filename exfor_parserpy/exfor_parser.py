@@ -285,23 +285,24 @@ def output_entry(datadic, ofs=0, auxinfo=None):
     return lines, ofs
 
 
-def parse(lines=None, datadic=None, inverse=False, ofs=0):
-    if not inverse:
-        datadic = {}
-        while ofs < len(lines):
-            if read_str_field(lines[ofs], 0) == "ENTRY":
-                entryid = read_str_field(lines[ofs], 1).strip()
-                entry, ofs = parse_entry(lines, ofs)
-                datadic[entryid] = entry
-            else:
-                ofs += 1
-        return datadic, ofs
-    else:
-        lines = []
-        for curentryid, curdic in datadic.items():
-            curlines, ofs = output_entry(curdic, ofs)
-            lines.extend(curlines)
-        return lines, ofs
+def parse(lines, ofs=0):
+    datadic = {}
+    while ofs < len(lines):
+        if read_str_field(lines[ofs], 0) == "ENTRY":
+            entryid = read_str_field(lines[ofs], 1).strip()
+            entry, ofs = parse_entry(lines, ofs)
+            datadic[entryid] = entry
+        else:
+            ofs += 1
+    return datadic, ofs
+
+
+def output(datadic, ofs=0):
+    lines = []
+    for curentryid, curdic in datadic.items():
+        curlines, ofs = output_entry(curdic, ofs)
+        lines.extend(curlines)
+    return lines, ofs
 
 
 # the user interface
@@ -320,7 +321,7 @@ def from_exfor(cont):
 
 
 def to_exfor(exfor_dic):
-    lines, _ = parse(datadic=exfor_dic, inverse=True)
+    lines, _ = output(datadic=exfor_dic)
     return lines
 
 
