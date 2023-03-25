@@ -188,60 +188,59 @@ def output_common_or_data(datadic, ofs=0, what="common"):
     return lines, ofs
 
 
-def parse_subentry(lines=None, datadic=None, inverse=False, ofs=0, auxinfo=None):
-    if not inverse:
-        datadic = {}
-        if read_str_field(lines[ofs], 0) != "SUBENT":
-            raise TypeError("not a SUBENT block")
-        if auxinfo is None:
-            auxinfo = {}
-        auxinfo["subentryid"] = read_str_field(lines[ofs], 1).strip()
-        datadic["__entryid"] = auxinfo["entryid"]
-        datadic["__subentid"] = auxinfo["subentryid"]
-        ofs += 1
-        while ofs < len(lines) and read_str_field(lines[ofs], 0) != "ENDSUBENT":
-            curfield = read_str_field(lines[ofs], 0)
-            if curfield == "BIB":
-                bibsec, ofs = parse_bib(lines, ofs)
-                datadic["BIB"] = bibsec
+def parse_subentry(lines, ofs=0, auxinfo=None):
+    datadic = {}
+    if read_str_field(lines[ofs], 0) != "SUBENT":
+        raise TypeError("not a SUBENT block")
+    if auxinfo is None:
+        auxinfo = {}
+    auxinfo["subentryid"] = read_str_field(lines[ofs], 1).strip()
+    datadic["__entryid"] = auxinfo["entryid"]
+    datadic["__subentid"] = auxinfo["subentryid"]
+    ofs += 1
+    while ofs < len(lines) and read_str_field(lines[ofs], 0) != "ENDSUBENT":
+        curfield = read_str_field(lines[ofs], 0)
+        if curfield == "BIB":
+            bibsec, ofs = parse_bib(lines, ofs)
+            datadic["BIB"] = bibsec
 
-            if curfield == "COMMON":
-                commonsec, ofs = parse_common_or_data(lines, ofs, what="common")
-                datadic["COMMON"] = commonsec
+        if curfield == "COMMON":
+            commonsec, ofs = parse_common_or_data(lines, ofs, what="common")
+            datadic["COMMON"] = commonsec
 
-            if curfield == "DATA":
-                datasec, ofs = parse_common_or_data(lines, ofs, what="data")
-                datadic["DATA"] = datasec
-            else:
-                ofs += 1
-        # advance ofs after ENDSUBENT
-        ofs += 1
-        return datadic, ofs
-    else:
-        lines = []
-        subent_line = write_str_field("", 0, "SUBENT")
-        subent_line = write_str_field(
-            subent_line, 1, datadic["__subentid"], align="right"
-        )
-        lines.append(subent_line)
-        ofs += 1
-        if "BIB" in datadic:
-            curdic = datadic["BIB"]
-            curlines, ofs = output_bib(curdic, ofs)
-            lines.extend(curlines)
-        if "COMMON" in datadic:
-            curdic = datadic["COMMON"]
-            curlines, ofs = output_common_or_data(curdic, ofs, what="common")
-            lines.extend(curlines)
+        if curfield == "DATA":
+            datasec, ofs = parse_common_or_data(lines, ofs, what="data")
+            datadic["DATA"] = datasec
         else:
-            lines.append(write_str_field("", 0, "NOCOMMON"))
             ofs += 1
-        if "DATA" in datadic:
-            curdic = datadic["DATA"]
-            curlines, ofs = output_common_or_data(curdic, ofs, what="data")
-            lines.extend(curlines)
-        lines.append(write_str_field("", 0, "ENDSUBENT"))
-        return lines, ofs
+    # advance ofs after ENDSUBENT
+    ofs += 1
+    return datadic, ofs
+
+
+def output_subentry(datadic, ofs=0, auxinfo=None):
+    lines = []
+    subent_line = write_str_field("", 0, "SUBENT")
+    subent_line = write_str_field(subent_line, 1, datadic["__subentid"], align="right")
+    lines.append(subent_line)
+    ofs += 1
+    if "BIB" in datadic:
+        curdic = datadic["BIB"]
+        curlines, ofs = output_bib(curdic, ofs)
+        lines.extend(curlines)
+    if "COMMON" in datadic:
+        curdic = datadic["COMMON"]
+        curlines, ofs = output_common_or_data(curdic, ofs, what="common")
+        lines.extend(curlines)
+    else:
+        lines.append(write_str_field("", 0, "NOCOMMON"))
+        ofs += 1
+    if "DATA" in datadic:
+        curdic = datadic["DATA"]
+        curlines, ofs = output_common_or_data(curdic, ofs, what="data")
+        lines.extend(curlines)
+    lines.append(write_str_field("", 0, "ENDSUBENT"))
+    return lines, ofs
 
 
 def parse_entry(lines=None, datadic=None, inverse=False, ofs=0, auxinfo=None):
@@ -257,7 +256,7 @@ def parse_entry(lines=None, datadic=None, inverse=False, ofs=0, auxinfo=None):
         while ofs < len(lines) and read_str_field(lines[ofs], 0) != "ENDENTRY":
             if read_str_field(lines[ofs], 0) == "SUBENT":
                 subentid = read_str_field(lines[ofs], 1).strip()
-                subent, ofs = parse_subentry(lines, None, inverse, ofs, auxinfo=auxinfo)
+                subent, ofs = parse_subentry(lines, ofs, auxinfo=auxinfo)
                 datadic[subentid] = subent
             else:
                 ofs += 1
@@ -278,7 +277,7 @@ def parse_entry(lines=None, datadic=None, inverse=False, ofs=0, auxinfo=None):
         lines.append(entry_line)
         ofs += 1
         for cursubent, curdic in datadic.items():
-            curlines, ofs = parse_subentry(lines, curdic, inverse, ofs)
+            curlines, ofs = output_subentry(curdic, ofs)
             lines.extend(curlines)
         lines.append(write_str_field("", 0, "ENDENTRY"))
         ofs += 1
