@@ -93,7 +93,6 @@ def output_bib(datadic, ofs=0):
 
 
 def parse_common_or_data(lines, ofs=0, what="common"):
-    datadic = {}
     if read_str_field(lines[ofs], 0) != what.upper():
         raise TypeError(f"not a {what.upper()} block")
     numfields = read_int_field(lines[ofs], 1)
