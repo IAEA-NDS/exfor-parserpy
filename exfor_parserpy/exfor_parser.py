@@ -31,7 +31,7 @@ from .utils.convenience import (
 from .utils.custom_iterators import search_for_field
 
 
-def parse_bib_element(lines, ofs=0):
+def parse_bib_element(lines, ofs=0, parse_opts=None):
     pointerdic = {}
     fieldkey, pointer = read_pointered_field(lines[ofs], 0)
     content = read_str_field(lines[ofs], 1, 5)
@@ -69,7 +69,7 @@ def output_bib_element(datadic, ofs=0):
     return lines, ofs
 
 
-def parse_bib(lines, ofs=0):
+def parse_bib(lines, ofs=0, parse_opts=None):
     datadic = {}
     if read_str_field(lines[ofs], 0) != "BIB":
         raise TypeError("not a BIB block")
@@ -92,7 +92,7 @@ def output_bib(datadic, ofs=0):
     return lines, ofs
 
 
-def parse_common_or_data(lines, ofs=0, what="common"):
+def parse_common_or_data(lines, ofs=0, what="common", parse_opts=None):
     if read_str_field(lines[ofs], 0) != what.upper():
         raise TypeError(f"not a {what.upper()} block")
     numfields = read_int_field(lines[ofs], 1)
@@ -188,7 +188,7 @@ def output_common_or_data(datadic, ofs=0, what="common"):
     return lines, ofs
 
 
-def parse_subentry(lines, ofs=0, auxinfo=None):
+def parse_subentry(lines, ofs=0, auxinfo=None, parse_opts=None):
     datadic = {}
     if read_str_field(lines[ofs], 0) != "SUBENT":
         raise TypeError("not a SUBENT block")
@@ -205,11 +205,15 @@ def parse_subentry(lines, ofs=0, auxinfo=None):
             datadic["BIB"] = bibsec
 
         if curfield == "COMMON":
-            commonsec, ofs = parse_common_or_data(lines, ofs, what="common")
+            commonsec, ofs = parse_common_or_data(
+                lines, ofs, what="common", parse_opts=parse_opts
+            )
             datadic["COMMON"] = commonsec
 
         if curfield == "DATA":
-            datasec, ofs = parse_common_or_data(lines, ofs, what="data")
+            datasec, ofs = parse_common_or_data(
+                lines, ofs, what="data", parse_opts=parse_opts
+            )
             datadic["DATA"] = datasec
         else:
             ofs += 1
@@ -243,7 +247,7 @@ def output_subentry(datadic, ofs=0, auxinfo=None):
     return lines, ofs
 
 
-def parse_entry(lines, ofs=0, auxinfo=None):
+def parse_entry(lines, ofs=0, auxinfo=None, parse_opts=None):
     datadic = {"subentries": []}
     if read_str_field(lines[ofs], 0) != "ENTRY":
         raise TypeError("not an ENTRY block")
@@ -255,7 +259,9 @@ def parse_entry(lines, ofs=0, auxinfo=None):
     while ofs < len(lines) and read_str_field(lines[ofs], 0) != "ENDENTRY":
         if read_str_field(lines[ofs], 0) == "SUBENT":
             subentid = read_str_field(lines[ofs], 1).strip()
-            subent, ofs = parse_subentry(lines, ofs, auxinfo=auxinfo)
+            subent, ofs = parse_subentry(
+                lines, ofs, auxinfo=auxinfo, parse_opts=parse_opts
+            )
             datadic[subentid] = subent
         else:
             ofs += 1
@@ -285,12 +291,12 @@ def output_entry(datadic, ofs=0, auxinfo=None):
     return lines, ofs
 
 
-def parse(lines, ofs=0):
+def parse(lines, ofs=0, parse_opts=None):
     datadic = {}
     while ofs < len(lines):
         if read_str_field(lines[ofs], 0) == "ENTRY":
             entryid = read_str_field(lines[ofs], 1).strip()
-            entry, ofs = parse_entry(lines, ofs)
+            entry, ofs = parse_entry(lines, ofs, parse_opts=parse_opts)
             datadic[entryid] = entry
         else:
             ofs += 1
@@ -306,7 +312,7 @@ def output(datadic, ofs=0):
 
 
 # the user interface
-def from_exfor(cont):
+def from_exfor(cont, parse_opts=None):
     if isinstance(cont, str):
         lines = cont.splitlines()
     elif isinstance(cont, list):
@@ -316,7 +322,7 @@ def from_exfor(cont):
             "argument must be either string with "
             + "EXFOR entry or list of lines with EXFOR entry"
         )
-    exfor_dic, _ = parse(lines=lines)
+    exfor_dic, _ = parse(lines=lines, parse_opts=parse_opts)
     return exfor_dic
 
 
@@ -325,11 +331,11 @@ def to_exfor(exfor_dic):
     return lines
 
 
-def read_exfor(filename):
+def read_exfor(filename, parse_opts=None):
     with open(filename, "r") as f:
         cont = f.readlines()
     cont = [line.rstrip("\n").rstrip("\r") for line in cont]
-    return from_exfor(cont)
+    return from_exfor(cont, parse_opts=parse_opts)
 
 
 def write_exfor(filename, exfor_dic, overwrite=False):
