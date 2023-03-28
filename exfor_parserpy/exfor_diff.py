@@ -32,18 +32,22 @@ import numpy as np
 import html
 
 
-def compute_edit_matrix(str1, str2, cost_sub=100):
+def compute_edit_matrix(str1=None, str2=None, cmpfun=None, cost_sub=100):
     m = np.zeros((len(str1) + 1, len(str2) + 1), dtype=float)
     m[:, 0] = np.arange(m.shape[0])
     m[0, :] = np.arange(m.shape[1])
     for j in range(len(str2)):
         for i in range(len(str1)):
-            cost = 0.0 if str1[i] == str2[j] else cost_sub
+            if cmpfun is None:
+                cost = 0.0 if str1[i] == str2[j] else cost_sub
+            else:
+                breakpoint()
+                cost = cmpfun(str1[i], str2[j])
             m[i + 1, j + 1] = min(m[i, j + 1] + 1.0, m[i + 1, j] + 1.0, m[i, j] + cost)
     return m
 
 
-def compute_edit_path(str1, str2):
+def compute_edit_path(str1=None, str2=None, cmpfun=None):
     m = compute_edit_matrix(str1, str2)
     i = m.shape[0] - 1
     j = m.shape[1] - 1
@@ -54,7 +58,11 @@ def compute_edit_path(str1, str2):
         cost_before_sub = m[i - 1, j - 1]
         move_type = np.argmin([cost_before_sub, cost_before_del, cost_before_ins])
         if move_type == 0:
-            if str1[i - 1] == str2[j - 1]:
+            if cmpfun is None:
+                cmpres = 0.0 if str1[i - 1] == str2[j - 1] else 0
+            else:
+                cmpres = cmpfun(str1[i - 1], str2[j - 1])
+            if cmpres == 0:
                 p.append("k")
             else:
                 p.append("s")
