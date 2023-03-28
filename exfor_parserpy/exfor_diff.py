@@ -30,6 +30,21 @@ from .utils.convenience import (
 from .utils.custom_iterators import search_for_field
 
 
+def align_side_by_side(lines1=None, lines2=None):
+    if isinstance(lines1, str):
+        lines1 = [lines1]
+    if isinstance(lines2, str):
+        lines2 = [lines2]
+    lines1 = lines1.copy() if lines1 is not None else []
+    lines2 = lines2.copy() if lines2 is not None else []
+    lendiff = len(lines2) - len(lines1)
+    if lendiff > 0:
+        lines1.extend([" " * 66] * lendiff)
+    elif lendiff < 0:
+        lines2.extend([" " * 66] * lendiff)
+    return [l1 + " | " + l2 for l1, l2 in zip(lines1, lines2)]
+
+
 def bib_element_diff(datadic1, datadic2):
     if len(datadic1) != 1 or len(datadic2) != 1:
         raise TypeError("dictionary with one element expected")
@@ -55,15 +70,13 @@ def bib_element_diff(datadic1, datadic2):
             lines1 = write_bib_element(
                 fieldkey, pointer, content1[pointer], outkey=first1
             )
-            lines2 = [" " * 66]
-            curlines = [line1 + " | " + line2 for line1, line2 in zip(lines1, lines2)]
+            curlines = align_side_by_side(lines1, None)
             first1 = False
         elif pointer not in content1:
             lines2 = write_bib_element(
                 fieldkey, pointer, content2[pointer], outkey=first2
             )
-            lines1 = [" " * 66]
-            curlines = [line1 + " | " + line2 for line1, line2 in zip(lines1, lines2)]
+            curlines = align_side_by_side(None, lines2)
             first2 = False
         else:
             lines1 = write_bib_element(
@@ -73,9 +86,9 @@ def bib_element_diff(datadic1, datadic2):
                 fieldkey, pointer, content2[pointer], outkey=first2
             )
             lines2 = [li[:11] + "<mark>" + li[11:] + "</mark>" for li in lines2]
+            curlines = align_side_by_side(lines1, lines2)
             first1 = False
             first2 = False
-            curlines = [line1 + " | " + line2 for line1, line2 in zip(lines1, lines2)]
         lines.extend(curlines)
     return lines
 
@@ -89,13 +102,11 @@ def bib_diff(datadic1, datadic2):
         if key not in datadic2:
             value1 = datadic1[key]
             lines1, _ = output_bib_element({key: value1})
-            lines2 = [" " * 66] * len(lines1)
-            curlines = [line1 + " | " + line2 for line1, line2 in zip(lines1, lines2)]
+            curlines = align_side_by_side(lines1, None)
         elif key not in datadic1:
             value2 = datadic2[key]
             lines2, _ = output_bib_element({key: value2})
-            lines1 = [" " * 66] * len(lines2)
-            curlines = [line1 + " | " + line2 for line1, line2 in zip(lines1, lines2)]
+            curlines = align_side_by_side(None, lines2)
         else:
             curdic1 = {key: datadic1[key]}
             curdic2 = {key: datadic2[key]}
@@ -109,16 +120,19 @@ def bib_diff(datadic1, datadic2):
 def common_or_data_diff(datadic1, datadic2, what="common"):
     lines = []
     numfields1 = count_fields(datadic1["DATA"])
-    numfields2 = count_fields(datadic2["DATA"])
     numlines1 = 1 if what == "common" else count_points_in_datablock(datadic1)
-    numlines2 = 1 if what == "common" else count_points_in_datablock(datadic2)
     headline1 = write_str_field("", 0, "COMMON" if what == "common" else "DATA")
     headline1 = write_int_field(headline1, 1, numfields1)
     headline1 = write_int_field(headline1, 2, numlines1)
+
+    numfields2 = count_fields(datadic2["DATA"])
+    numlines2 = 1 if what == "common" else count_points_in_datablock(datadic2)
     headline2 = write_str_field("", 0, "COMMON" if what == "common" else "DATA")
     headline2 = write_int_field(headline2, 1, numfields2)
     headline2 = write_int_field(headline2, 2, numlines2)
-    lines.append(headline1 + " | " + headline2)
+
+    curlines = align_side_by_side(headline1, headline2)
+    lines.extend(curlines)
     # prepare descrs, unit and value lists
     descrs1 = []
     descrs2 = []
@@ -153,7 +167,7 @@ def common_or_data_diff(datadic1, datadic2, what="common"):
                 if pointer not in unit_dic2:
                     descrs1.append((fieldkey, pointer))
                     units1.append(cont1[pointer])
-                if pointer not in unit_dic1:
+                elif pointer not in unit_dic1:
                     descrs2.append((fieldkey, pointer))
                     units2.append(cont1[pointer])
                 else:
@@ -165,21 +179,12 @@ def common_or_data_diff(datadic1, datadic2, what="common"):
     # write out the header
     curlines1 = write_fields(descrs1, 0, dtype="strp")
     curlines2 = write_fields(descrs2, 0, dtype="strp")
-    lendiff = len(curlines2) - len(curlines1)
-    if lendiff > 0:
-        curlines1.extend([" " * 66] * lendiff)
-    elif lendiff < 0:
-        curlines2.extend([" " * 66] * lendiff)
-    curlines = [l1 + " | " + l2 for l1, l2 in zip(curlines1, curlines2)]
+    curlines = align_side_by_side(curlines1, curlines2)
     lines.extend(curlines)
 
     curlines1 = write_fields(units1, 0, dtype="str")
     curlines2 = write_fields(units2, 0, dtype="str")
-    if lendiff > 0:
-        curlines1.extend([" " * 66] * lendiff)
-    elif lendiff < 0:
-        curlines2.extend([" " * 66] * lendiff)
-    curlines = [l1 + " | " + l2 for l1, l2 in zip(curlines1, curlines2)]
+    curlines = align_side_by_side(curlines1, curlines2)
     lines.extend(curlines)
 
     # write the data
@@ -218,12 +223,7 @@ def common_or_data_diff(datadic1, datadic2, what="common"):
 
         curlines1 = write_fields(values1, 0, dtype="float")
         curlines2 = write_fields(values2, 0, dtype="float")
-        lendiff = len(curlines2) - len(curlines1)
-        if lendiff > 0:
-            curlines1.extend([" " * 66] * lendiff)
-        elif lendiff < 0:
-            curlines2.extend([" " * 66] * lendiff)
-        curlines = [l1 + " | " + l2 for l1, l2 in zip(curlines1, curlines2)]
+        curlines = align_side_by_side(curlines1, curlines2)
         lines.extend(curlines)
     elif what == "data":
         # get a column of the DATA section table
@@ -257,12 +257,7 @@ def common_or_data_diff(datadic1, datadic2, what="common"):
                     values2.append(data_dic2[fieldkey][pointer][currow2])
             curlines2.extend(write_fields(values2, 0, dtype="float"))
 
-        lendiff = len(curlines2) - len(curlines1)
-        if lendiff > 0:
-            curlines1.extend([" " * 66] * lendiff)
-        elif lendiff < 0:
-            curlines2.extend([" " * 66] * lendiff)
-        curlines = [l1 + " | " + l2 for l1, l2 in zip(curlines1, curlines2)]
+        curlines = align_side_by_side(curlines1, curlines2)
         lines.extend(curlines)
 
     end_line = write_str_field("", 0, "ENDCOMMON" if what == "common" else "ENDDATA")
@@ -282,13 +277,11 @@ def subentry_diff(datadic1, datadic2):
     elif "BIB" in datadic1:
         curdic1 = datadic1["BIB"]
         lines1, _ = output_bib(curdic1)
-        lines2 = [" " * 66] * len(lines1)
-        curlines = [line1 + " | " + line2 for line1, line2 in zip(lines1, lines2)]
+        curlines = align_side_by_side(lines1, None)
     elif "BIB" in datadic2:
         curdic2 = datadic2["BIB"]
         lines2, _ = output_bib(curdic2)
-        lines1 = [" " * 66] * len(lines2)
-        curlines = [line1 + " | " + line2 for line1, line2 in zip(lines1, lines2)]
+        curlines = align_side_by_side(None, lines2)
     else:
         curlines = []
     lines.extend(curlines)
@@ -301,13 +294,11 @@ def subentry_diff(datadic1, datadic2):
         elif blocktype in datadic1:
             curdic1 = datadic1[blocktype]
             lines1, _ = output_common_or_data(curdic1, what=blocktype.lower())
-            lines2 = [" " * 66] * len(lines1)
-            curlines = [line1 + " | " + line2 for line1, line2 in zip(lines1, lines2)]
+            curlines = align_side_by_side(lines1, None)
         elif blocktype in datadic2:
             curdic2 = datadic2[blocktype]
             lines2, _ = output_common_or_data(curdic2, what=blocktype.lower())
-            lines1 = [" " * 66] * len(lines1)
-            curlines = [line1 + " | " + line2 for line1, line2 in zip(lines1, lines2)]
+            curlines = align_side_by_side(None, lines2)
         else:
             curlines = []
         lines.extend(curlines)
@@ -336,13 +327,11 @@ def entry_diff(datadic1, datadic2):
         if subentid not in datadic2.keys():
             curdic1 = datadic1[subentid]
             lines1, _ = output_subentry(curdic1)
-            lines2 = [" " * 66] * len(lines1)
-            curlines = [line1 + " | " + line2 for line1, line2 in zip(lines1, lines2)]
+            curlines = align_side_by_side(lines1, None)
         elif subentid not in datadic1.keys():
             curdic2 = datadic2[subentid]
             lines2, _ = output_subentry(curdic2)
-            lines1 = [" " * 66] * len(lines2)
-            curlines = [line1 + " | " + line2 for line1, line2 in zip(lines1, lines2)]
+            curlines = align_side_by_side(None, lines2)
         else:
             curdic1 = datadic1[subentid]
             curdic2 = datadic2[subentid]
@@ -372,13 +361,11 @@ def output_diff(datadic1, datadic2):
         if entryid not in datadic2:
             curdic1 = datadic1[entryid]
             lines1, _ = output_entry(curdic1)
-            lines2 = [" " * 66] * len(lines1)
-            curlines = [line1 + " | " + line2 for line1, line2 in zip(lines1, lines2)]
+            curlines = align_side_by_side(lines1, None)
         elif entryid not in datadic1:
             curdic2 = datadic2[entryid]
             lines2, _ = output_entry(curdic2)
-            lines1 = [" " * 66] * len(lines2)
-            curlines = [line1 + " | " + line2 for line1, line2 in zip(lines1, lines2)]
+            curlines = align_side_by_side(None, lines2)
         else:
             curdic1 = datadic1[entryid]
             curdic2 = datadic2[entryid]
