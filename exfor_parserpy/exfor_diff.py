@@ -28,9 +28,108 @@ from .utils.convenience import (
     contains_pointers,
 )
 from .utils.custom_iterators import search_for_field
+import numpy as np
+import html
 
 
-def align_side_by_side(lines1=None, lines2=None):
+def compute_edit_matrix(str1, str2):
+    m = np.zeros((len(str1) + 1, len(str2) + 1), dtype=float)
+    m[:, 0] = np.arange(m.shape[0])
+    m[0, :] = np.arange(m.shape[1])
+    for j in range(len(str2)):
+        for i in range(len(str1)):
+            cost_sub = 0.0 if str1[i] == str2[j] else 100.0
+            m[i + 1, j + 1] = min(
+                m[i, j + 1] + 1.0, m[i + 1, j] + 1.0, m[i, j] + cost_sub
+            )
+    return m
+
+
+def compute_edit_path(str1, str2):
+    m = compute_edit_matrix(str1, str2)
+    i = m.shape[0] - 1
+    j = m.shape[1] - 1
+    p = []
+    while i > 0 or j > 0:
+        cost_before_del = m[i - 1, j]
+        cost_before_ins = m[i, j - 1]
+        cost_before_sub = m[i - 1, j - 1]
+        move_type = np.argmin([cost_before_sub, cost_before_del, cost_before_ins])
+        if move_type == 0:
+            if str1[i - 1] == str2[j - 1]:
+                p.append("k")
+            else:
+                p.append("s")
+            i -= 1
+            j -= 1
+        elif move_type == 1:
+            i -= 1
+            p.append("d")
+        else:
+            j -= 1
+            p.append("i")
+    if i > 0:
+        p.extend(["d"] * i)
+    else:
+        p.extend(["i"] * j)
+    p.reverse()
+    return np.array(p)
+
+
+def find_last_nonwhite(string):
+    i = len(string) - 1
+    while i >= 0 and string[i] == " ":
+        i -= 1
+    return i
+
+
+def enhanced_escape(string, escape=True):
+    if not escape:
+        return string
+    newstring = html.escape(string)
+    newstring = newstring.replace(" ", "&nbsp;")
+    return newstring
+
+
+def add_diff_markers(
+    edit_type_arr,
+    string,
+    edit_type,
+    start_marker="<mark>",
+    end_marker="</mark>",
+    escape=True,
+):
+    indel = False
+    start_list = []
+    term_list = []
+    last_nonwhite_idx = find_last_nonwhite(string)
+    for i, t, c in zip(range(len(string)), edit_type_arr, string):
+        if i > last_nonwhite_idx:
+            break
+        if t == edit_type and not indel:
+            start_list.append(i)
+            indel = True
+        elif t == "k" and indel:
+            term_list.append(i - 1)
+            indel = False
+    if indel:
+        term_list.append(i - 1)
+
+    if len(start_list) == 0:
+        return enhanced_escape(string, escape)
+    else:
+        newstr = enhanced_escape(string[0 : start_list[0]], escape)
+        for i, s, t in zip(range(len(start_list)), start_list, term_list):
+            partstr = enhanced_escape(string[s : t + 1], escape)
+            newstr += start_marker + partstr + end_marker
+            if i + 1 < len(start_list):
+                next_s = start_list[i + 1]
+                newstr += enhanced_escape(string[t + 1 : next_s])
+        newstr += enhanced_escape(string[term_list[-1] + 1 :], escape)
+        return newstr
+
+
+def align_side_by_side(lines1=None, lines2=None, escape=True):
     if isinstance(lines1, str):
         lines1 = [lines1]
     if isinstance(lines2, str):
@@ -42,6 +141,9 @@ def align_side_by_side(lines1=None, lines2=None):
         lines1.extend([" " * 66] * lendiff)
     elif lendiff < 0:
         lines2.extend([" " * 66] * lendiff)
+    if escape:
+        lines1 = [enhanced_escape(line) for line in lines1]
+        lines2 = [enhanced_escape(line) for line in lines2]
     return [l1 + " | " + l2 for l1, l2 in zip(lines1, lines2)]
 
 
@@ -85,8 +187,47 @@ def bib_element_diff(datadic1, datadic2):
             lines2 = write_bib_element(
                 fieldkey, pointer, content2[pointer], outkey=first2
             )
-            lines2 = [li[:11] + "<mark>" + li[11:] + "</mark>" for li in lines2]
-            curlines = align_side_by_side(lines1, lines2)
+            # diff magic
+            lh1 = [enhanced_escape(li[:11]) for li in lines1]
+            lc1 = [li[11:] for li in lines1]
+            lh2 = [enhanced_escape(li[:11]) for li in lines2]
+            lc2 = [li[11:] for li in lines2]
+            lens1 = [len(s) for s in lc1]
+            lens2 = [len(s) for s in lc2]
+            breaks1 = np.cumsum([0] + lens1)
+            breaks2 = np.cumsum([0] + lens2)
+            lc1j = "".join(lc1)
+            lc2j = "".join(lc2)
+            edit_path = compute_edit_path(lc1j, lc2j)
+            ep1 = edit_path[np.isin(edit_path, ("d", "k"))]
+            ep2 = edit_path[np.isin(edit_path, ("i", "k"))]
+            ep1s = [ep1[i:j] for i, j in zip(breaks1[:-1], breaks1[1:])]
+            ep2s = [ep2[i:j] for i, j in zip(breaks2[:-1], breaks2[1:])]
+            new_lc1 = []
+            for e, line in zip(ep1s, lc1):
+                newline = add_diff_markers(
+                    e,
+                    line,
+                    "d",
+                    start_marker='<mark class="deletion">',
+                    end_marker="</mark>",
+                )
+                new_lc1.append(newline)
+            lines1 = [lh + lc for lh, lc in zip(lh1, new_lc1)]
+
+            new_lc2 = []
+            for e, line in zip(ep2s, lc2):
+                newline = add_diff_markers(
+                    e,
+                    line,
+                    "i",
+                    start_marker='<mark class="addition">',
+                    end_marker="</mark>",
+                )
+                new_lc2.append(newline)
+            lines2 = [lh + lc for lh, lc in zip(lh2, new_lc2)]
+            # end diff magic
+            curlines = align_side_by_side(lines1, lines2, escape=False)
             first1 = False
             first2 = False
         lines.extend(curlines)
@@ -96,7 +237,7 @@ def bib_element_diff(datadic1, datadic2):
 def bib_diff(datadic1, datadic2):
     lines = []
     start_bib_line = write_str_field("", 0, "BIB")
-    lines.append(start_bib_line + " | " + start_bib_line)
+    lines.extend(align_side_by_side(start_bib_line, start_bib_line))
     bibkeys = sorted(set(datadic1).union(datadic2))
     for key in bibkeys:
         if key not in datadic2:
@@ -113,7 +254,7 @@ def bib_diff(datadic1, datadic2):
             curlines = bib_element_diff(curdic1, curdic2)
         lines.extend(curlines)
     end_bib_field = write_str_field("", 0, "ENDBIB")
-    lines.append(end_bib_field + " | " + end_bib_field)
+    lines.extend(align_side_by_side(end_bib_field, end_bib_field))
     return lines
 
 
@@ -261,7 +402,7 @@ def common_or_data_diff(datadic1, datadic2, what="common"):
         lines.extend(curlines)
 
     end_line = write_str_field("", 0, "ENDCOMMON" if what == "common" else "ENDDATA")
-    lines.append(end_line + " | " + end_line)
+    lines.extend(align_side_by_side(end_line, end_line))
     return lines
 
 
@@ -269,7 +410,7 @@ def subentry_diff(datadic1, datadic2):
     lines = []
     subent_line = write_str_field("", 0, "SUBENT")
     subent_line = write_str_field(subent_line, 1, datadic1["__subentid"], align="right")
-    lines.append(subent_line + " | " + subent_line)
+    lines.extend(align_side_by_side(subent_line, subent_line))
     if "BIB" in datadic1 and "BIB" in datadic2:
         curdic1 = datadic1["BIB"]
         curdic2 = datadic2["BIB"]
@@ -304,7 +445,7 @@ def subentry_diff(datadic1, datadic2):
         lines.extend(curlines)
 
     end_subent_line = write_str_field("", 0, "ENDSUBENT")
-    lines.append(end_subent_line + " | " + end_subent_line)
+    lines.extend(align_side_by_side(end_subent_line, end_subent_line))
     return lines
 
 
@@ -320,7 +461,7 @@ def entry_diff(datadic1, datadic2):
 
     entry_line = write_str_field("", 0, "ENTRY")
     entry_line = write_str_field(entry_line, 1, entryid, align="right")
-    lines.append(entry_line + " | " + entry_line)
+    lines.extend(align_side_by_side(entry_line, entry_line))
 
     subentids = sorted(set(tuple(datadic1.keys()) + tuple(datadic2.keys())))
     for subentid in subentids:
@@ -339,22 +480,22 @@ def entry_diff(datadic1, datadic2):
         lines.extend(curlines)
 
     end_entry_line = write_str_field("", 0, "ENDENTRY")
-    lines.append(end_entry_line + " | " + end_entry_line)
+    lines.extend(align_side_by_side(end_entry_line, end_entry_line))
     return lines
 
 
 def output_diff(datadic1, datadic2):
-    header = []
-    header.append("<!DOCTYPE html>")
-    header.append("<html>")
-    header.append("<head>")
-    header.append("<style>")
-    header.append("body {")
-    header.append("  font-family: 'Courier New', monospace;")
-    header.append("}")
-    header.append("</style>")
-    header.append("</head>")
-    header.append("<body>")
+    header = [
+        """
+    <!DOCTYPE html>
+    <html> <head>
+    <style>
+    body { font-family: 'Courier New', monospace; }
+    .addition { background-color:#c0ffc8; }
+    .deletion { background-color:#ffa07a; }
+    </style></head><body>
+    """
+    ]
     lines = []
     entryids = sorted(set(tuple(datadic1.keys()) + tuple(datadic2.keys())))
     for entryid in entryids:
@@ -371,7 +512,6 @@ def output_diff(datadic1, datadic2):
             curdic2 = datadic2[entryid]
             curlines = entry_diff(curdic1, curdic2)
         lines.extend(curlines)
-    lines = [li.replace(" ", "&nbsp;") for li in lines]
     lines = [li + "<br>" for li in lines]
     lines.append("</body></html>")
     return header + lines
