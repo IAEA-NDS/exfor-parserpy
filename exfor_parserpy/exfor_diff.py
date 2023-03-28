@@ -441,17 +441,35 @@ def common_or_data_diff(datadic1, datadic2, what="common"):
                         values1.append(cont1[pointer])
                         values2.append(cont2[pointer])
 
+        remove_mask = np.array(remove_mask, dtype=bool)
+        insert_mask = np.array(insert_mask, dtype=bool)
+        cmp_values1 = np.array(values1)[~remove_mask]
+        cmp_values2 = np.array(values2)[~insert_mask]
+        is_same_value = cmp_values1 == cmp_values2
+
+        ext_mask1 = np.full(len(values1), False)
+        ext_mask1[remove_mask] = True
+        tmp = np.full(len(is_same_value), False)
+        tmp[~is_same_value] = True
+        ext_mask1[~remove_mask] = tmp
+
+        ext_mask2 = np.full(len(values2), False)
+        ext_mask2[insert_mask] = True
+        tmp = np.full(len(is_same_value), False)
+        tmp[~is_same_value] = True
+        ext_mask2[~insert_mask] = tmp
+
         curlines1 = write_fields(values1, 0, dtype="float")
         curlines1 = add_tablecell_diff_markers(
             curlines1,
-            remove_mask,
+            ext_mask1,
             start_marker='<mark class="deletion">',
             end_marker="</mark>",
         )
         curlines2 = write_fields(values2, 0, dtype="float")
         curlines2 = add_tablecell_diff_markers(
             curlines2,
-            insert_mask,
+            ext_mask2,
             start_marker='<mark class="addition">',
             end_marker="</mark>",
         )
