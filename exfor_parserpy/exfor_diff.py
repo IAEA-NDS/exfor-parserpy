@@ -8,6 +8,7 @@
 # Copyright (c) 2023 International Atomic Energy Agency (IAEA)
 #
 ############################################################
+import sys
 from os.path import exists
 from .exfor_parser import (
     output_entry,
@@ -15,6 +16,7 @@ from .exfor_parser import (
     output_bib,
     output_bib_element,
     output_common_or_data,
+    read_exfor,
 )
 from .exfor_primitives import (
     write_str_field,
@@ -719,3 +721,14 @@ def write_exfor_diff(filename, exfor_dic1, exfor_dic2, overwrite=False):
     lines = exfor_diff(exfor_dic1, exfor_dic2)
     with open(filename, "w") as f:
         f.write("\n".join(lines))
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        raise TypeError("expecting two filenames with EXFOR entries")
+    filename1 = sys.argv[1]
+    filename2 = sys.argv[2]
+    exfor_dic1 = read_exfor(filename1)
+    exfor_dic2 = read_exfor(filename2)
+    diff_lines = exfor_diff(exfor_dic1, exfor_dic2)
+    print("\n".join(diff_lines))
