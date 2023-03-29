@@ -3,7 +3,7 @@
 # Author(s):       Georg Schnabel
 # Email:           g.schnabel@iaea.org
 # Creation date:   2023/03/28
-# Last modified:   2023/03/28
+# Last modified:   2023/03/29
 # License:         MIT
 # Copyright (c) 2023 International Atomic Energy Agency (IAEA)
 #
@@ -543,7 +543,6 @@ def common_or_data_diff(datadic1, datadic2, what="common"):
             tmp = v1s != v2s
             tmp[np.isnan(tmp)] = True
             tmp[np.isnan(v1s) & np.isnan(v2s)] = False
-
             tmp[np.isnan(tmp)] = False
             mask_list1[i][remove_mask] = True
             mask_list2[j][insert_mask] = True
@@ -551,26 +550,42 @@ def common_or_data_diff(datadic1, datadic2, what="common"):
             mask_list2[j][~insert_mask] = tmp
 
         curlines1 = []
-        for vals1, mask1 in zip(values1, mask_list1):
-            curline1 = write_fields(vals1, 0, dtype="float")
-            curline1 = add_tablecell_diff_markers(
-                curline1,
-                mask1,
-                start_marker='<mark class="deletion">',
-                end_marker="</mark>",
-            )
-            curlines1.extend(curline1)
-
         curlines2 = []
-        for vals2, mask2 in zip(values2, mask_list2):
-            curline2 = write_fields(vals2, 0, dtype="float")
-            curline2 = add_tablecell_diff_markers(
-                curline2,
-                mask2,
-                start_marker='<mark class="addition">',
-                end_marker="</mark>",
-            )
-            curlines2.extend(curline2)
+        idx1 = 0
+        idx2 = 0
+        noline_start_marker = '<mark class="noline">'
+        noline_end_marker = "</mark>"
+        empty_line = noline_start_marker + enhanced_escape(" " * 66) + noline_end_marker
+        for i, et in enumerate(ep):
+            if et != "i":
+                vals1 = values1[idx1]
+                mask1 = mask_list1[idx1]
+                curline1 = write_fields(vals1, 0, dtype="float")
+                curline1 = add_tablecell_diff_markers(
+                    curline1,
+                    mask1,
+                    start_marker='<mark class="deletion">',
+                    end_marker="</mark>",
+                )
+                curlines1.extend(curline1)
+                idx1 += 1
+            else:
+                curlines1.append(empty_line)
+
+            if et != "d":
+                vals2 = values2[idx2]
+                mask2 = mask_list2[idx2]
+                curline2 = write_fields(vals2, 0, dtype="float")
+                curline2 = add_tablecell_diff_markers(
+                    curline2,
+                    mask2,
+                    start_marker='<mark class="addition">',
+                    end_marker="</mark>",
+                )
+                curlines2.extend(curline2)
+                idx2 += 1
+            else:
+                curlines2.append(empty_line)
 
         curlines = align_side_by_side(curlines1, curlines2, escape=False)
         lines.extend(curlines)
