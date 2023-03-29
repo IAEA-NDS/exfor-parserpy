@@ -41,14 +41,13 @@ def compute_edit_matrix(str1=None, str2=None, cmpfun=None, cost_sub=100):
             if cmpfun is None:
                 cost = 0.0 if str1[i] == str2[j] else cost_sub
             else:
-                breakpoint()
                 cost = cmpfun(str1[i], str2[j])
             m[i + 1, j + 1] = min(m[i, j + 1] + 1.0, m[i + 1, j] + 1.0, m[i, j] + cost)
     return m
 
 
 def compute_edit_path(str1=None, str2=None, cmpfun=None):
-    m = compute_edit_matrix(str1, str2)
+    m = compute_edit_matrix(str1, str2, cmpfun)
     i = m.shape[0] - 1
     j = m.shape[1] - 1
     p = []
@@ -381,6 +380,9 @@ def common_or_data_diff(datadic1, datadic2, what="common"):
                     insert_mask.append(False)
 
     # write out the header
+    remove_mask = np.array(remove_mask, dtype=bool)
+    insert_mask = np.array(insert_mask, dtype=bool)
+
     curlines1 = write_fields(descrs1, 0, dtype="strp")
     curlines1 = add_tablecell_diff_markers(
         curlines1,
@@ -449,8 +451,6 @@ def common_or_data_diff(datadic1, datadic2, what="common"):
                         values1.append(cont1[pointer])
                         values2.append(cont2[pointer])
 
-        remove_mask = np.array(remove_mask, dtype=bool)
-        insert_mask = np.array(insert_mask, dtype=bool)
         cmp_values1 = np.array(values1)[~remove_mask]
         cmp_values2 = np.array(values2)[~insert_mask]
         is_same_value = cmp_values1 == cmp_values2
@@ -499,31 +499,74 @@ def common_or_data_diff(datadic1, datadic2, what="common"):
                 break
         numlines2 = len(curdic2)
         # cycle through the columns
-        curlines1 = []
+        values1 = []
         for currow1 in range(numlines1):
-            values1 = []
-            for fieldkey, cont in unit_dic1.items():
+            values1.append([])
+            curvals1 = values1[currow1]
+            sorted_keys = sorted(unit_dic1.keys())
+            for fieldkey in sorted_keys:
+                cont = unit_dic1[fieldkey]
                 for pointer in cont:
-                    values1.append(data_dic1[fieldkey][pointer][currow1])
-            curline1 = write_fields(values1, 0, dtype="float")
+                    curvals1.append(data_dic1[fieldkey][pointer][currow1])
+        values2 = []
+        for currow2 in range(numlines2):
+            values2.append([])
+            curvals2 = values2[currow2]
+            sorted_keys = sorted(unit_dic2.keys())
+            for fieldkey in sorted_keys:
+                cont = unit_dic2[fieldkey]
+                for pointer in cont:
+                    curvals2.append(data_dic2[fieldkey][pointer][currow2])
+
+        values1_arr = [np.array(v, dtype=float) for v in values1]
+        values2_arr = [np.array(v, dtype=float) for v in values2]
+
+        def cmpfun(x, y):
+            cmpres = np.sum(x[~remove_mask] != y[~insert_mask])
+            cmpres *= 2 / cmpfun.numfields
+            return cmpres
+
+        cmpfun.numfields = np.sum(~remove_mask)
+
+        ep = compute_edit_path(values1_arr, values2_arr, cmpfun)
+        ep1 = ep[ep != "i"]
+        ep2 = ep[ep != "d"]
+        numfields1 = len(remove_mask)
+        numfields2 = len(insert_mask)
+        mask_list1 = [np.full(numfields1, m == "d") for i, m in enumerate(ep1)]
+        mask_list2 = [np.full(numfields2, m == "i") for i, m in enumerate(ep2)]
+        subidcs1 = np.where(ep1 == "s")[0]
+        subidcs2 = np.where(ep2 == "s")[0]
+        for i, j in zip(subidcs1, subidcs2):
+            v1s = values1_arr[i][~remove_mask]
+            v2s = values2_arr[j][~insert_mask]
+            tmp = v1s != v2s
+            tmp[np.isnan(tmp)] = True
+            tmp[np.isnan(v1s) & np.isnan(v2s)] = False
+
+            tmp[np.isnan(tmp)] = False
+            mask_list1[i][remove_mask] = True
+            mask_list2[j][insert_mask] = True
+            mask_list1[i][~remove_mask] = tmp
+            mask_list2[j][~insert_mask] = tmp
+
+        curlines1 = []
+        for vals1, mask1 in zip(values1, mask_list1):
+            curline1 = write_fields(vals1, 0, dtype="float")
             curline1 = add_tablecell_diff_markers(
                 curline1,
-                remove_mask,
+                mask1,
                 start_marker='<mark class="deletion">',
                 end_marker="</mark>",
             )
             curlines1.extend(curline1)
 
         curlines2 = []
-        for currow2 in range(numlines2):
-            values2 = []
-            for fieldkey, cont in unit_dic2.items():
-                for pointer in cont:
-                    values2.append(data_dic2[fieldkey][pointer][currow2])
-            curline2 = write_fields(values2, 0, dtype="float")
+        for vals2, mask2 in zip(values2, mask_list2):
+            curline2 = write_fields(vals2, 0, dtype="float")
             curline2 = add_tablecell_diff_markers(
                 curline2,
-                insert_mask,
+                mask2,
                 start_marker='<mark class="addition">',
                 end_marker="</mark>",
             )
