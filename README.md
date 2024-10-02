@@ -27,12 +27,25 @@ consult the [Contributing](#contributing) section.
 ## Installation
 
 We recommend the creation of a virtual environment.
-For instance, with conda this can be done by
+For instance, with [venv](https://docs.python.org/3/library/venv.html)
+this can be done by
 ```
-conda create -y -n exfor-parserpy pip
-conda activate exfor-parserpy
+python -m venv exfor_venv
 ```
-Afterwards, you can install `exfor-paserpy` using pip:
+To activate this environment, if you are on Linux or MacOS, run
+```
+source ./exfor_venv/bin/activate
+```
+and on Windows run
+```
+.\venv\Scripts\activate.bat
+```
+Now, all packages installed via `pip` will be installed into
+the `exfor_venv` folder and are completely isolated from the
+user-wide and system-wide installed packages. By runnig
+`deactivate`, the virtual environment gets deactivated.
+
+You can install `exfor-paserpy` using pip:
 ```
 pip install git+https://github.com/iaea-nds/exfor-parserpy.git
 ```
